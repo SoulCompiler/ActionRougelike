@@ -3,39 +3,60 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SInteractionComponent.h"
 #include "GameFramework/Character.h"
 #include "SCharacter.generated.h"
 
 class UCameraComponent;
 class USpringArmComponent;
+class USInteractionComponent;
+class UAnimMontage;
 
 UCLASS()
 class ACTIONROUGELIKE_API ASCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
+protected:
+	UPROPERTY(EditAnywhere, Category = "Attack")		// Categoryä¸ºå˜é‡åœ¨ç¼–è¾‘å™¨ä¸­çš„åˆ†å¸ƒè¿›è¡Œåˆ†ç±»
+	TSubclassOf<AActor> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	UAnimMontage* AttackAnim;
+
+	FTimerHandle TimerHandle_PrimaryAttack;
 public:
 	// Sets default values for this character's properties
 	ASCharacter();
 
 protected:
-
-	UPROPERTY(VisibleAnywhere)		// ÊôĞÔÏµÍ³ÖĞUPROPERTY()£¬Îª±äÁ¿Ìí¼ÓÔÚ±à¼­Æ÷ÖĞ¿É¼ûµÄÊôĞÔ
-	USpringArmComponent* SpringArmComp;		// ÎªÊ²Ã´µ¯»É±Û×é¼şÒªºÍÏà»ú×é¼ş°ó¶¨Ê¹ÓÃ£¿´ğ°¸£º
+	UPROPERTY(VisibleAnywhere)		// å±æ€§ç³»ç»Ÿä¸­UPROPERTY()ï¼Œä¸ºå˜é‡æ·»åŠ åœ¨ç¼–è¾‘å™¨ä¸­å¯è§çš„å±æ€§
+	USpringArmComponent* SpringArmComp;		// ä¸ºä»€ä¹ˆå¼¹ç°§è‡‚ç»„ä»¶è¦å’Œç›¸æœºç»„ä»¶ç»‘å®šä½¿ç”¨ï¼Ÿç­”æ¡ˆï¼šç”¨SpringArmæ§åˆ¶æ‘„åƒæœºçš„Pitchï¼ŒYawï¼ŒRollã€‚åœ¨æ­¤ä¾‹ä¸­ï¼ŒSpringArmè¿˜ä»£è¡¨ControllerRotation
 
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* CameraComp;
+
+	UPROPERTY(VisibleAnywhere)
+	USInteractionComponent* InteractionComp;
+
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	void MoveForward(float Value);
 
+	void MoveRight(float Value);
+
+	void PrimaryAttack();
+
+	void PrimaryAttack_TimeElapsed();
+	
+	void PrimaryInteract();
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
 };
