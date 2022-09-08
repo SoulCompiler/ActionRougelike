@@ -73,8 +73,7 @@ void USInteractionComponent::PrimaryInteract()
 				ISGameplayInterface::Execute_Interact(HitActor, MyPawn);		// 调用者调用BlueprintNativeEvent函数的方式
 			}
 		}
-
-		DrawDebugSphere(GetWorld(),Hit.ImpactPoint,Radius,32,LineColor,false,2.0f);		// 可视化debug的球体
+		// DrawDebugSphere(GetWorld(),Hit.ImpactPoint,Radius,32,LineColor,false,2.0f);		// 可视化debug的球体
 	}
 	
 	DrawDebugLine(GetWorld(),EyeLocation,End,LineColor,false,2.0f,0,2.0f);		// 可视化debug的线条

@@ -3,6 +3,9 @@
 
 #include "SExplosiveBarrel.h"
 
+#include "DrawDebugHelpers.h"
+#include "SAttributeComponent.h"
+
 // Sets default values
 ASExplosiveBarrel::ASExplosiveBarrel()
 {
@@ -27,13 +30,24 @@ void ASExplosiveBarrel::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();		// 继承而来的用于初始化的虚函数一定要首先调用父类的函数。
 
-	MeshComp->OnComponentHit.AddDynamic(this,&ASExplosiveBarrel::OnActorHit);		// 将对象和函数动态绑定到蓝图函数上，作为蓝图函数的多态执行。
+	MeshComp->OnComponentHit.AddDynamic(this,&ASExplosiveBarrel::OnActorHit);		// 将对象和函数动态绑定到蓝图函数上，作为蓝图函数的多态执行。将这段代码放在beginplay中可能会出错，为什么？
 }
 
 void ASExplosiveBarrel::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
 	ForceComp->FireImpulse();		// 执行发射脉冲的函数
 
-	UE_LOG(LogTemp,Log,TEXT("OnActorHit reached (ExplosiveBarrel)"));	// 在编辑器的Log中打印此语句，确认触发这个事件。
+	USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));		// 使用ByClass后缀的函数时，要以ClassName::StaticClass()作为参数
+	if (AttributeComp)
+	{
+		AttributeComp->ApplyHealthChange(-50.f);
+	}
+	
+	UE_LOG(LogTemp,Log,TEXT("OnActorHit reached (ExplosiveBarrel)"));	// 宏，用于在Editor Log中显示Log信息。TEXT()支持Unicode。
+
+	UE_LOG(LogTemp,Warning,TEXT("OtherActor: %s, at game time: %f"),*GetNameSafe(OtherActor),GetWorld()->TimeSeconds);			// TEXT中还可以像printf一样使用参数。
+
+	FString CombinedString = FString::Printf(TEXT("Hit at location: %s"),*Hit.ImpactPoint.ToString());
+	DrawDebugString(GetWorld(),Hit.ImpactPoint,CombinedString,nullptr,FColor::Green,2.0f,true);	// DrawDebug系列
 }
 

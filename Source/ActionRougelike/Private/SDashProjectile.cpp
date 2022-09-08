@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "SMagicProjectile.h"
+#include "SDashProjectile.h"
 
-#include "SAttributeComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
-ASMagicProjectile::ASMagicProjectile()
+ASDashProjectile::ASDashProjectile()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -20,9 +20,8 @@ ASMagicProjectile::ASMagicProjectile()
 	// SphereComp->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);
 
 	SphereComp->SetCollisionProfileName("Projectile"); // 使用预设的配置文件作为该对象的碰撞规则，就不用在代码中一一设置了。
-	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ASMagicProjectile::OnActorOverlap);
 	RootComponent = SphereComp; // 一般都把碰撞体作为根组件。
-
+	
 	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
 	EffectComp->SetupAttachment(SphereComp);
 
@@ -33,29 +32,39 @@ ASMagicProjectile::ASMagicProjectile()
 }
 
 // Called when the game starts or when spawned
-void ASMagicProjectile::BeginPlay()
+void ASDashProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
+	
+	GetWorldTimerManager().SetTimer(TimerHandle_Dash, this, &ASDashProjectile::Projectile_Explode, 0.5);
 }
 
 // Called every frame
-void ASMagicProjectile::Tick(float DeltaTime)
+void ASDashProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-                                       UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
-                                       const FHitResult& SweepResult)
+void ASDashProjectile::Projectile_Explode()
 {
-	if (OtherActor && OtherActor != GetInstigator())
-	{
-		USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
-		if (AttributeComp)
-		{
-			AttributeComp->ApplyHealthChange(-20.f);
+	MovementComp->StopMovementImmediately();
+	
+	UGameplayStatics::SpawnEmitterAtLocation(this, EmitterTemplate, GetActorLocation(), GetActorRotation(), false);
 
-			Destroy();
-		}
-	}
+	GetWorldTimerManager().ClearTimer(TimerHandle_Dash);
+	
+	GetWorldTimerManager().SetTimer(TimerHandle_Dash, this, &ASDashProjectile::Dash_Effect, 0.5f);
+}
+
+void ASDashProjectile::Dash_Effect()
+{
+	APawn* ProjectileInstigator = GetInstigator();
+
+	// FTransform DashTarget(Owner->GetActorRotation(),this->GetActorLocation());
+
+	ProjectileInstigator->SetActorLocation(this->GetActorLocation());
+
+	Destroy();
 }

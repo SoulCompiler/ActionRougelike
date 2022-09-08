@@ -21,11 +21,11 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* MeshComp;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly)
 	URadialForceComponent* ForceComp;
 	
 	virtual void PostInitializeComponents() override;		// 允许Actor在初始化所有组件后在C++端初始化自己，仅在游戏过程中调用
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void OnActorHit(UPrimitiveComponent* HitComponent,AActor* OtherActor,UPrimitiveComponent* OtherComponent,FVector NormalImpulse,const FHitResult& Hit);		// 此函数的声明必须和蓝图中的函数一致（On Component Hit ()）
 };
