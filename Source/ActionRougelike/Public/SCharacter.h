@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "SAttributeComponent.h"
 #include "SInteractionComponent.h"
+#include "SProjectileBase.h"
 #include "GameFramework/Character.h"
 #include "SCharacter.generated.h"
 
@@ -19,28 +20,11 @@ class ACTIONROUGELIKE_API ASCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-protected:
-	UPROPERTY(EditAnywhere, Category = "Attack") // Category为变量在编辑器中的分布进行分类
-	TSubclassOf<AActor> ProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> BlackholeClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> DashProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	UAnimMontage* AttackAnim;
-
-	FTimerHandle TimerHandle_PrimaryAttack;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	float FiringRange;
-
 
 public:
 	// Sets default values for this character's properties
 	ASCharacter();
+
 
 protected:
 	UPROPERTY(VisibleAnywhere) // 属性系统中UPROPERTY()，为变量添加在编辑器中可见的属性
@@ -56,7 +40,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USAttributeComponent* AttributeComp;
 
-
+	virtual void PostInitializeComponents() override;
+	
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -66,20 +51,54 @@ protected:
 
 	void PrimaryAttack();
 
-
-	FRotator GetImpactRotation(const FVector& Vector);
-
 	void PrimaryAttack_TimeElapsed();
 
 	void PrimaryInteract();
 
-	void SuperAttack();
+	void BlackHoleAttack();
+
+	void BlackHoleAttack_TimeElapsed();
 
 	void Dash();
+
+	void Dash_TimeElaped();
+
+	void SpawnProjectile(TSubclassOf<AActor> ClassToSpawn);
+
+	UFUNCTION()
+	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "Attack") // Category为变量在编辑器中的分布进行分类
+	TSubclassOf<AActor> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	TSubclassOf<AActor> BlackHoleProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	TSubclassOf<AActor> DashProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	UAnimMontage* AttackAnim;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	UParticleSystem* AttackVFX;
+
+	FTimerHandle TimerHandle_PrimaryAttack;
+
+	FTimerHandle TimerHandle_BlackHoleAttack;
+
+	FTimerHandle TimerHandle_Dash;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+	float FiringRange;
+
+	float AttackAnimDelay;
 };

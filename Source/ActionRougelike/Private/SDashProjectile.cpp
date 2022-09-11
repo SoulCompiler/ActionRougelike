@@ -9,62 +9,47 @@
 // Sets default values
 ASDashProjectile::ASDashProjectile()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	TeleportDelay = 0.2f;
+	DetonateDelay = 0.2f;
 
-	SphereComp = CreateDefaultSubobject<USphereComponent>("SphereComp");
-
-	// 以下是可以在代码中设置的碰撞规则
-	// SphereComp->SetCollisionObjectType(ECC_WorldDynamic);
-	// SphereComp->SetCollisionResponseToAllChannels(ECR_Ignore);
-	// SphereComp->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);
-
-	SphereComp->SetCollisionProfileName("Projectile"); // 使用预设的配置文件作为该对象的碰撞规则，就不用在代码中一一设置了。
-	RootComponent = SphereComp; // 一般都把碰撞体作为根组件。
-	
-	EffectComp = CreateDefaultSubobject<UParticleSystemComponent>("EffectComp");
-	EffectComp->SetupAttachment(SphereComp);
-
-	MovementComp = CreateDefaultSubobject<UProjectileMovementComponent>("MovementComp");
-	MovementComp->InitialSpeed = 1000.0f;
-	MovementComp->bRotationFollowsVelocity = true;
-	MovementComp->bInitialVelocityInLocalSpace = true;
+	MoveComp->InitialSpeed = 6000.0f;
 }
 
-// Called when the game starts or when spawned
+
 void ASDashProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
-	
-	GetWorldTimerManager().SetTimer(TimerHandle_Dash, this, &ASDashProjectile::Projectile_Explode, 0.5);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_DelayDetonate, this, &ASDashProjectile::Explode, DetonateDelay);
 }
 
-// Called every frame
-void ASDashProjectile::Tick(float DeltaTime)
+void ASDashProjectile::Explode_Implementation()
 {
-	Super::Tick(DeltaTime);
+	// Super::Explode_Implementation();
+
+	GetWorldTimerManager().ClearTimer(TimerHandle_DelayDetonate);
+
+	UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
+
+	EffectComp->DeactivateSystem(); // 关闭粒子系统。
+
+	MoveComp->StopMovementImmediately(); // 停止移动
+	SetActorEnableCollision(false); // 禁用碰撞
+
+	FTimerHandle TimerHandle_DelayTeleport;
+	GetWorldTimerManager().SetTimer(TimerHandle_DelayTeleport, this, &ASDashProjectile::TeleportInstigator,TeleportDelay);
+
+	// Destroy();	// 由于没有重写父类的OnActorHit，所以使用父类的OnActorHit，这父类中已经调用了destroy。
 }
 
-void ASDashProjectile::Projectile_Explode()
+void ASDashProjectile::TeleportInstigator()
 {
-	MovementComp->StopMovementImmediately();
-	
-	UGameplayStatics::SpawnEmitterAtLocation(this, EmitterTemplate, GetActorLocation(), GetActorRotation(), false);
-
-	GetWorldTimerManager().ClearTimer(TimerHandle_Dash);
-	
-	GetWorldTimerManager().SetTimer(TimerHandle_Dash, this, &ASDashProjectile::Dash_Effect, 0.5f);
-}
-
-void ASDashProjectile::Dash_Effect()
-{
-	APawn* ProjectileInstigator = GetInstigator();
-
-	// FTransform DashTarget(Owner->GetActorRotation(),this->GetActorLocation());
-
-	ProjectileInstigator->SetActorLocation(this->GetActorLocation());
+	AActor* ActorToTeleport = GetInstigator();
+	if (ensure(ActorToTeleport))
+	{
+		// Actor类实现了传送函数,不用直接SetLocationAndRotation
+		ActorToTeleport->TeleportTo(GetActorLocation(), ActorToTeleport->GetActorRotation(), false, false);
+	}
 
 	Destroy();
 }

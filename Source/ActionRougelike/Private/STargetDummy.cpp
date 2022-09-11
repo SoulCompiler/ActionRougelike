@@ -18,7 +18,7 @@ ASTargetDummy::ASTargetDummy()
 void ASTargetDummy::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth,
                                     float Delta)
 {
-	// Delta为负数时是治疗效果，不应该触发此函数。
+	// Delta为正数时是治疗效果，不应该触发此函数。
 	if (Delta < 0.0f)
 	{
 		MeshComp->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);

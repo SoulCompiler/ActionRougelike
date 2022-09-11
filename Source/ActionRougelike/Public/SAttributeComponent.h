@@ -22,17 +22,22 @@ public:
 	USAttributeComponent();
 
 protected:
-	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	// EditDefaultOnly表示该变量只能在蓝图的属性窗口编辑，不能在level的属性窗口编辑。
 	float Health;
 
-	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	float HealthMax;
+
 public:
-	
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthChanged OnHealthChanged; // 动态组播的代理名称
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	bool ApplyHealthChange(float Delta);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsAlive() const;
+
+	bool IsFullHealth() const;
 };
