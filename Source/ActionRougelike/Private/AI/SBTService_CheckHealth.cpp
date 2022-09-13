@@ -20,8 +20,10 @@ void USBTService_CheckHealth::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 			APawn* MyPawn = MyController->GetPawn();
 			if (ensure(MyPawn))
 			{
-				USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(MyPawn->GetComponentByClass(USAttributeComponent::StaticClass()));
-
+				// USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(MyPawn->GetComponentByClass(USAttributeComponent::StaticClass()));
+				// 由静态函数替代
+				USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(MyPawn);
+				
 				if (AttributeComp && AttributeComp->IsLowHealth())
 				{
 					BlackboardComp->SetValueAsBool(LowHealthKey.SelectedKeyName, true);

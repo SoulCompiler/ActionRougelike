@@ -18,16 +18,24 @@ public:
 	ASAICharacter();
 
 protected:
-
 	virtual void PostInitializeComponents() override;
-	
+
 	UFUNCTION()
 	void OnPawnSeen(APawn* Pawn);
-	
+
+	UFUNCTION()
+	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
+
+	UFUNCTION()
+	void SetTargetActor(AActor* NewTarget);
+
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UPawnSensingComponent* PawnSensingComp;
 
-	UPROPERTY(VisibleAnywhere,Category = "Components")
+	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USAttributeComponent* AttributeComp;
+
+	UPROPERTY(VisibleAnywhere,Category = "Effects")
+	FName TimeToHitParamName;
 };

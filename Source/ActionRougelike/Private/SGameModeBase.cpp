@@ -4,6 +4,7 @@
 #include "SGameModeBase.h"
 
 #include "AITypes.h"
+#include "DrawDebugHelpers.h"
 #include "EngineUtils.h"
 #include "SAttributeComponent.h"
 #include "AI/SAICharacter.h"
@@ -49,24 +50,28 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 	{
 		ASAICharacter* Bot = *It;
 
-		USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(
-			Bot->GetComponentByClass(USAttributeComponent::StaticClass()));
+		// USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(Bot->GetComponentByClass(USAttributeComponent::StaticClass()));
+		// 由静态函数替代
+		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(Bot);
+		
 		if (AttributeComp && AttributeComp->IsAlive())
 		{
 			NrOfAliveBots++;
 		}
 	}
 
-	// MaxBotCount = 10.0f;
+	UE_LOG(LogTemp, Log, TEXT("Found %i alive bots."), NrOfAliveBots);
 
+	// MaxBotCount = 10.0f;
 	if (DifficultyCurve)
 	{
 		// 通过难度曲线设置AI Bot的上限
 		MaxBotCount = DifficultyCurve->GetFloatValue(GetWorld()->TimeSeconds); // 随时间的曲线，根据时间（X轴）取值
 	}
 
-	if (NrOfAliveBots >= MaxBotCount) 
+	if (NrOfAliveBots >= MaxBotCount)
 	{
+		UE_LOG(LogTemp, Log, TEXT("At maximum bot capacity.Skipping bot spawn."));
 		return;
 	}
 
@@ -75,5 +80,7 @@ void ASGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryIn
 	if (Locations.IsValidIndex(0))
 	{
 		GetWorld()->SpawnActor<AActor>(MinionClass, Locations[0], FRotator::ZeroRotator);
+
+		DrawDebugSphere(GetWorld(), Locations[0], 50.0f, 20, FColor::Blue, false, 60.0f);
 	}
 }

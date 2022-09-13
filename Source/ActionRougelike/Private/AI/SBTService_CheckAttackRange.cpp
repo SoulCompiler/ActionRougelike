@@ -14,6 +14,7 @@ void USBTService_CheckAttackRange::TickNode(UBehaviorTreeComponent& OwnerComp, u
 	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
 	if (ensure(BlackboardComp))
 	{
+		// todo：Key：TargetActor未在服务开始前初始化
 		AActor* TargetActor = Cast<AActor>(BlackboardComp->GetValueAsObject("TargetActor"));
 		if (ensure(TargetActor))
 		{

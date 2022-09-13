@@ -36,15 +36,15 @@ ASMagicProjectile::ASMagicProjectile()
 
 	SphereComp->OnComponentBeginOverlap.RemoveAll(this);
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ASMagicProjectile::OnActorOverlap);
-	MoveComp->InitialSpeed = 1000.f;
-
+	
 	DamageAmount = 20.0f;
 }
 
 void ASMagicProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	
 	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
 
 	if (ensure(AudioComp->Sound))
@@ -59,33 +59,22 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 {
 	if (OtherActor && OtherActor != GetInstigator())
 	{
-		USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(
-			OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
-
+		// USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
+		// 由静态函数替代
+		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(OtherActor);
+		
 		if (AttributeComp)
 		{
 			if (ensure(ImpactAFX))
 			{
 				UGameplayStatics::PlaySoundAtLocation(this, ImpactAFX, GetActorLocation(), GetActorRotation());
 			}
-			AttributeComp->ApplyHealthChange(-DamageAmount);
-			Destroy();
+			AttributeComp->ApplyHealthChange(GetInstigator(), -DamageAmount);
+			Explode();
 		}
 	}
 }
 
-void ASMagicProjectile::Explode_Implementation()
-{
-	// Super::Explode_Implementation();
-
-	// DrawDebugSphere(GetWorld(), GetActorLocation(), 100, 12, FColor::Red, false, 1.0);
-	//
-	// UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
-	// UGameplayStatics::PlaySoundAtLocation(this, ImpactAFX, GetActorLocation(), GetActorRotation());
-	// UGameplayStatics::PlayWorldCameraShake()
-	//
-	// Destroy();
-}
 
 void ASMagicProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,
                                    UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)

@@ -19,17 +19,20 @@ EBTNodeResult::Type USBTTask_RestoreHealth::ExecuteTask(UBehaviorTreeComponent& 
 			return EBTNodeResult::Failed;
 		}
 
-		USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(MyPawn->GetComponentByClass(USAttributeComponent::StaticClass()));
+		// USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(MyPawn->GetComponentByClass(USAttributeComponent::StaticClass()));
+		// 由静态函数替代
+		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(MyPawn);
+
 		if (ensure(AttributeComp))
 		{
 			if (AttributeComp->IsAlive())
 			{
-				AttributeComp->ApplyHealthChange(HealingAmount);
+				AttributeComp->ApplyHealthChange(MyPawn, HealingAmount);
 
 				UBlackboardComponent* Blackboard = OwnerComp.GetBlackboardComponent();
 				if (ensure(Blackboard))
 				{
-					Blackboard->SetValueAsBool(LowHealthKey.SelectedKeyName,false);
+					Blackboard->SetValueAsBool(LowHealthKey.SelectedKeyName, false);
 
 					return EBTNodeResult::Succeeded;
 				}

@@ -39,12 +39,13 @@ void ASExplosiveBarrel::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Ot
 {
 	ForceComp->FireImpulse(); // 执行发射脉冲的函数
 
-	USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(
-		OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
+	// USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));	// 由静态函数替代
+	USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(OtherActor);
+
 	// 使用ByClass后缀的函数时，要以ClassName::StaticClass()作为参数
 	if (AttributeComp)
 	{
-		AttributeComp->ApplyHealthChange(-50.f);
+		AttributeComp->ApplyHealthChange(OtherActor, -50.f);
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("OnActorHit reached (ExplosiveBarrel)")); // 宏，用于在Editor Log中显示Log信息。TEXT()支持Unicode。
