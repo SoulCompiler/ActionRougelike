@@ -13,39 +13,11 @@ ASHealthPotion::ASHealthPotion()
 	// PrimaryActorTick.bCanEverTick = true;
 
 	MeshComp = CreateDefaultSubobject<UStaticMeshComponent>("MeshComp");
-	MeshComp->SetCollisionProfileName("Potion");
-	RootComponent = MeshComp;
+	MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComp->SetupAttachment(RootComponent);
 
 	HealingAmount = 20.0f;
 	CoolDownTime = 10.0f;
-}
-
-// Called when the game starts or when spawned
-void ASHealthPotion::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-void ASHealthPotion::HideAndCoolDown()
-{
-	MeshComp->SetVisibility(false,true);
-	SetActorEnableCollision(false);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_ReSpawn,this,&ASHealthPotion::ReSpawn,CoolDownTime);
-}
-
-void ASHealthPotion::ReSpawn()
-{
-	MeshComp->SetVisibility(true,false);
-	SetActorEnableCollision(true);
-}
-
-// Called every frame
-void ASHealthPotion::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 void ASHealthPotion::Interact_Implementation(APawn* InstigatorPawn)
@@ -61,7 +33,7 @@ void ASHealthPotion::Interact_Implementation(APawn* InstigatorPawn)
 	{
 		if (AttributeComp->ApplyHealthChange(HealingAmount))
 		{
-			HideAndCoolDown();
+			HideAndCoolDownPotion();
 		}
 	}
 }

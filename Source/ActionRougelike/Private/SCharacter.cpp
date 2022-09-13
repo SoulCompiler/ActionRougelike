@@ -34,25 +34,15 @@ ASCharacter::ASCharacter()
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
 
 	FiringRange = 5000.0f;
+
+	HandSocketName = "Muzzle_01";
 }
 
 void ASCharacter::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	AttributeComp->OnHealthChanged.AddDynamic(this,&ASCharacter::OnHealthChanged);
-}
-
-// Called when the game starts or when spawned
-void ASCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-// Called every frame
-void ASCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	AttributeComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
 }
 
 // Called to bind functionality to input
@@ -102,9 +92,10 @@ void ASCharacter::PrimaryAttack()
 	PlayAnimMontage(AttackAnim); // 播放蒙太奇动画
 	if (ensure(AttackVFX))
 	{
-		UGameplayStatics::SpawnEmitterAttached(AttackVFX,RootComponent);
+		UGameplayStatics::SpawnEmitterAttached(AttackVFX, GetMesh(), HandSocketName, FVector::ZeroVector,
+		                                       FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
 	}
-	
+
 	// 将需要在播放动画延时中执行的函数放在Timer中。
 	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::PrimaryAttack_TimeElapsed,
 	                                AttackAnimDelay);
@@ -155,7 +146,7 @@ void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn)
 {
 	if (ensureAlways(ClassToSpawn))
 	{
-		FVector HandLocation = GetMesh()->GetSocketLocation("Muzzle_01");
+		FVector HandLocation = GetMesh()->GetSocketLocation(HandSocketName);
 
 		FVector TraceStart = CameraComp->GetComponentLocation();
 		FVector TraceEnd = TraceStart + (CameraComp->GetComponentRotation().Vector() * FiringRange);
@@ -200,10 +191,10 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 	{
 		GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
 	}
-	
+
 	if (NewHealth <= 0.0f && Delta < 0.0f)
 	{
-		APlayerController* PC  = Cast<APlayerController>(GetController());
+		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
 	}
 }

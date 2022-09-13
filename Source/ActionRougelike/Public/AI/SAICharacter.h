@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SAttributeComponent.h"
 #include "GameFramework/Character.h"
 #include "Perception/PawnSensingComponent.h"
 #include "SAICharacter.generated.h"
@@ -26,5 +27,7 @@ protected:
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UPawnSensingComponent* PawnSensingComp;
-	
+
+	UPROPERTY(VisibleAnywhere,Category = "Components")
+	USAttributeComponent* AttributeComp;
 };
