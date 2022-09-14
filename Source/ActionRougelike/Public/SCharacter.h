@@ -24,7 +24,13 @@ class ACTIONROUGELIKE_API ASCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ASCharacter();
+	
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	// 在控制台中输入执行
+	UFUNCTION(Exec)
+	void HealSelf(float Amount = 100.0f);
 
 protected:
 	UPROPERTY(VisibleAnywhere) // 属性系统中UPROPERTY()，为变量添加在编辑器中可见的属性
@@ -65,11 +71,6 @@ protected:
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
-
-public:
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Attack") // Category为变量在编辑器中的分布进行分类

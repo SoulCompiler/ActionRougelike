@@ -50,4 +50,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	bool IsLowHealth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	bool Kill(AActor* InstigatorActor);
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	float GetHealthMax() const;
 };

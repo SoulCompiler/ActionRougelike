@@ -16,7 +16,7 @@ USAttributeComponent* USAttributeComponent::GetAttributes(AActor* FromActor)
 	{
 		return Cast<USAttributeComponent>(FromActor->GetComponentByClass(USAttributeComponent::StaticClass()));
 	}
-	
+
 	return nullptr;
 }
 
@@ -33,8 +33,11 @@ bool USAttributeComponent::IsActorAlive(AActor* Actor)
 
 bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {
-	// Health += Delta;
-	// Health =  FMath::Clamp(Health, 0.0f, HealthMax);
+	// 用UE自带的作弊器相关函数CanBeDamaged()来具体实现作弊功能
+	if (!GetOwner()->CanBeDamaged())
+	{
+		return false;
+	}
 
 	float OldHealth = Health;
 
@@ -59,4 +62,14 @@ bool USAttributeComponent::IsFullHealth() const
 bool USAttributeComponent::IsLowHealth() const
 {
 	return Health <= 30.0f;
+}
+
+bool USAttributeComponent::Kill(AActor* InstigatorActor)
+{
+	return ApplyHealthChange(InstigatorActor, -GetHealthMax());
+}
+
+float USAttributeComponent::GetHealthMax() const
+{
+	return HealthMax;
 }

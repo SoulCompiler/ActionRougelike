@@ -7,10 +7,10 @@ public class ActionRougelike : ModuleRules
 	public ActionRougelike(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "AIModule","GameplayTasks"});
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PublicDependencyModuleNames.AddRange(new string[] {"Core", "CoreUObject", "Engine", "InputCore", "AIModule", "GameplayTasks", "UMG"});
+
+		PrivateDependencyModuleNames.AddRange(new string[] { });
 
 		bEnableUndefinedIdentifierWarnings = false;
 		// Uncomment if you are using Slate UI
