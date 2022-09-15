@@ -5,6 +5,7 @@
 
 #include "AIController.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 void USBTService_CheckAttackRange::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
@@ -15,14 +16,16 @@ void USBTService_CheckAttackRange::TickNode(UBehaviorTreeComponent& OwnerComp, u
 	if (ensure(BlackboardComp))
 	{
 		// todo：Key：TargetActor未在服务开始前初始化
+		// @fixme: MyController总是赋值失败，为了调试流畅性取消ensure
 		AActor* TargetActor = Cast<AActor>(BlackboardComp->GetValueAsObject("TargetActor"));
-		if (ensure(TargetActor))
+		if (TargetActor)
 		{
 			AAIController* MyController = OwnerComp.GetAIOwner();
 			if (ensure(MyController))
 			{
 				APawn* AIPawn = MyController->GetPawn();
-				if (ensure(AIPawn))
+				// @fixme: AI Pawn总是赋值失败，为了调试的流畅性取消ensure
+				if (AIPawn)
 				{
 					float DistanceTo = FVector::Distance(TargetActor->GetActorLocation(), AIPawn->GetActorLocation());
 

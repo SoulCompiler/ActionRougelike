@@ -3,24 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SPotionBase.h"
-#include "SHealthPotion.generated.h"
+#include "SPowerupActorBase.h"
+#include "SPowerup_HealthPotion.generated.h"
 
 UCLASS()
-class ACTIONROUGELIKE_API ASHealthPotion : public ASPotionBase
+class ACTIONROUGELIKE_API ASPowerup_HealthPotion : public ASPowerupActorBase
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	ASHealthPotion();
+	ASPowerup_HealthPotion();
 
 protected:
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 
 protected:
-	UPROPERTY(VisibleAnywhere, Category = "Component")
-	UStaticMeshComponent* MeshComp;
 
 	UPROPERTY(EditAnywhere, Category = "Healing")
 	float HealingAmount;

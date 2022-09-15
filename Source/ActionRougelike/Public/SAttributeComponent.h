@@ -24,7 +24,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	static USAttributeComponent* GetAttributes(AActor* FromActor);
 
-	UFUNCTION(BlueprintCallable, Category = "Attributes", meta = (DisplayName = "IsAlive"))		// 类的成员变量（属性）标记 DisplayName 的 meta 后，搜索时可能更为便捷，可以不使用原本的成员变量关键字。
+	UFUNCTION(BlueprintCallable, Category = "Attributes", meta = (DisplayName = "IsAlive")) // 类的成员变量（属性）标记 DisplayName 的 meta 后，搜索时可能更为便捷，可以不使用原本的成员变量关键字。
 	static bool IsActorAlive(AActor* Actor);
 
 protected:
@@ -36,7 +36,7 @@ protected:
 	float HealthMax;
 
 public:
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnHealthChanged OnHealthChanged; // 动态组播的代理名称
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")

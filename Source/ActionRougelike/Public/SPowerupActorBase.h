@@ -6,30 +6,33 @@
 #include "SGameplayInterface.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
-#include "SPotionBase.generated.h"
+#include "SPowerupActorBase.generated.h"
 
 UCLASS()
-class ACTIONROUGELIKE_API ASPotionBase : public AActor, public ISGameplayInterface
+class ACTIONROUGELIKE_API ASPowerupActorBase : public AActor, public ISGameplayInterface
 {
 	GENERATED_BODY()
 
 public:
-	ASPotionBase();
+	ASPowerupActorBase();
 
 protected:
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 
-	void ReSpawnPotion();
+	void ReSpawnPowerup();
 
-	void HideAndCoolDownPotion();
+	void HideAndCoolDownPowerup();
 
-	void SetPotionState(bool bIsActive);
+	void SetPowerupState(bool bIsActive);
 
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USphereComponent* SphereComp;
 
-	UPROPERTY(EditAnywhere, Category = "Potion")
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	UStaticMeshComponent* MeshComp;
+
+	UPROPERTY(EditAnywhere, Category = "Powerup")
 	float CoolDownTime;
 
 	FTimerHandle TimerHandle_ReSpawn;

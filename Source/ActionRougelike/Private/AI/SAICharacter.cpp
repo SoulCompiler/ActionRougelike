@@ -6,9 +6,12 @@
 #include "AIController.h"
 #include "BrainComponent.h"
 #include "DrawDebugHelpers.h"
+#include "SGameModeBase.h"
 #include "SWorldUserWidget.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
 ASAICharacter::ASAICharacter()
@@ -17,6 +20,10 @@ ASAICharacter::ASAICharacter()
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
 
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	// 要使骨骼受某个方向子弹的力，就必须是Mesh能overlap这个子弹，要么让Collision Comp ignore这个子弹的碰撞通道，要么为子弹重新配置一种新的碰撞通道。
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+	GetMesh()->SetGenerateOverlapEvents(true);
 
 	TimeToHitParamName = "TimeToHit";
 }
@@ -51,14 +58,15 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 			if (ActiveHealthBar)
 			{
 				ActiveHealthBar->AttachedActor = this;
-				ActiveHealthBar->AddToViewport();	// 加入视口时调用Event Construct，所以要在这之前初始化Event Construct需要的值（见蓝图）。
+				ActiveHealthBar->AddToViewport(); // 加入视口时调用Event Construct，所以要在这之前初始化Event Construct需要的值（见蓝图）。
 			}
 		}
 
 
 		GetMesh()->SetScalarParameterValueOnMaterials(TimeToHitParamName, GetWorld()->TimeSeconds);
 
-		if (NewHealth <= 0.0f) // 受到这次伤害死亡
+		// 受到这次伤害死亡
+		if (NewHealth <= 0.0f)
 		{
 			// Stop BT
 			AAIController* AIC = Cast<AAIController>(GetController());
@@ -72,8 +80,19 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 			GetMesh()->SetAllBodiesSimulatePhysics(true);
 			GetMesh()->SetCollisionProfileName("Ragdoll");
 
+			// 停止胶囊体的碰撞，否则会留下一个看不见的碰撞体。
+			GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			GetCharacterMovement()->DisableMovement();
+
 			// set lifespan，尸体残留时间
 			SetLifeSpan(10.0f);
+
+			// ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
+			// if (GM)
+			// {
+			// 	// @fixme：如果是第三方物品让角色死亡呢？
+			// 	GM->OnActorKilled(this, InstigatorActor);
+			// }
 		}
 	}
 }

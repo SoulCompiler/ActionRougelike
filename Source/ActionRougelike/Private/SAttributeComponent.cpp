@@ -3,6 +3,11 @@
 
 #include "SAttributeComponent.h"
 
+#include "SGameModeBase.h"
+
+// 控制台变量，伤害系数
+static TAutoConsoleVariable<float> CVarDamageMultiplier(TEXT("su.DamageMultiplier"), 1.0f,TEXT("Global Damage Modifier for Attribute Component."), ECVF_Cheat);
+
 // Sets default values for this component's properties
 USAttributeComponent::USAttributeComponent()
 {
@@ -34,9 +39,16 @@ bool USAttributeComponent::IsActorAlive(AActor* Actor)
 bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delta)
 {
 	// 用UE自带的作弊器相关函数CanBeDamaged()来具体实现作弊功能
-	if (!GetOwner()->CanBeDamaged())
+	if (!GetOwner()->CanBeDamaged() && Delta < 0.0f /* 这个Delta有意义吗？都上帝模式了还在乎是否恢复血量？*/)
 	{
 		return false;
+	}
+
+	if (Delta < 0.0f)
+	{
+		float DamageMultiplier = CVarDamageMultiplier.GetValueOnGameThread();
+
+		Delta *= DamageMultiplier;
 	}
 
 	float OldHealth = Health;
@@ -45,6 +57,17 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 
 	float ActualDelta = Health - OldHealth;
 	OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
+
+	// Died
+	if (ActualDelta < 0.0f && Health == 0.0f)
+	{
+		ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
+		if (GM)
+		{
+			// @fixme：如果是第三方物品让角色死亡呢？
+			GM->OnActorKilled(GetOwner(), InstigatorActor);
+		}
+	}
 
 	return ActualDelta != 0; // 返回bool类型变量是为了之后判断这个生命值改变是否有效而准备的。
 }

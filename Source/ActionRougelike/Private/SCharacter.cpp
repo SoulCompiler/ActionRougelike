@@ -8,8 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "Kismet/KismetSystemLibrary.h"
+
 
 // Sets default values
 ASCharacter::ASCharacter()
@@ -32,7 +31,7 @@ ASCharacter::ASCharacter()
 	InteractionComp = CreateDefaultSubobject<USInteractionComponent>("InteractionComp");
 
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
-
+	
 	FiringRange = 5000.0f;
 
 	HandSocketName = "Muzzle_01";
@@ -43,6 +42,7 @@ void ASCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
+
 }
 
 // Called to bind functionality to input
@@ -138,10 +138,10 @@ void ASCharacter::BlackHoleAttack_TimeElapsed()
 void ASCharacter::Dash()
 {
 	PlayAnimMontage(AttackAnim);
-	GetWorldTimerManager().SetTimer(TimerHandle_Dash, this, &ASCharacter::Dash_TimeElaped, AttackAnimDelay);
+	GetWorldTimerManager().SetTimer(TimerHandle_Dash, this, &ASCharacter::Dash_TimeElapsed, AttackAnimDelay);
 }
 
-void ASCharacter::Dash_TimeElaped()
+void ASCharacter::Dash_TimeElapsed()
 {
 	SpawnProjectile(DashProjectileClass);
 }
@@ -202,4 +202,9 @@ void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent*
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
 	}
+}
+
+FVector ASCharacter::GetPawnViewLocation() const
+{
+	return CameraComp->GetComponentLocation();
 }

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "SAttributeComponent.h"
 #include "SInteractionComponent.h"
+#include "SPlayerState.h"
 #include "SProjectileBase.h"
 #include "GameFramework/Character.h"
 #include "SCharacter.generated.h"
@@ -48,7 +49,6 @@ protected:
 
 	virtual void PostInitializeComponents() override;
 	
-
 	void MoveForward(float Value);
 
 	void MoveRight(float Value);
@@ -65,12 +65,16 @@ protected:
 
 	void Dash();
 
-	void Dash_TimeElaped();
+	void Dash_TimeElapsed();
 
 	void SpawnProjectile(TSubclassOf<AActor> ClassToSpawn);
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
+
+	// 提供给InteractionComponent的GetActorEyesViewPoint()用于射线追踪，GetActorEyesViewPoint()的内部实现实际上是用了
+	// override的GetPawnViewLocation()来获取StartLocation，这里再override一下即可
+	virtual FVector GetPawnViewLocation() const override;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Attack") // Category为变量在编辑器中的分布进行分类
@@ -101,4 +105,5 @@ protected:
 
 	UPROPERTY(VisibleAnywhere,Category = "Effects")
 	FName HandSocketName;
+	
 };

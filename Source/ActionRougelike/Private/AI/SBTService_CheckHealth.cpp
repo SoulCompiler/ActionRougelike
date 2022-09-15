@@ -11,24 +11,19 @@ void USBTService_CheckHealth::TickNode(UBehaviorTreeComponent& OwnerComp, uint8*
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
 
-	UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
-	if (ensure(BlackboardComp))
+
+	AAIController* MyController = OwnerComp.GetAIOwner();
+	if (ensure(MyController))
 	{
-		AAIController* MyController = OwnerComp.GetAIOwner();
-		if (ensure(MyController))
+		APawn* MyPawn = MyController->GetPawn();
+		if (ensure(MyPawn))
 		{
-			APawn* MyPawn = MyController->GetPawn();
-			if (ensure(MyPawn))
-			{
-				// USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(MyPawn->GetComponentByClass(USAttributeComponent::StaticClass()));
-				// 由静态函数替代
-				USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(MyPawn);
-				
-				if (AttributeComp && AttributeComp->IsLowHealth())
-				{
-					BlackboardComp->SetValueAsBool(LowHealthKey.SelectedKeyName, true);
-				}
-			}
+			// USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(MyPawn->GetComponentByClass(USAttributeComponent::StaticClass()));
+			// 由静态函数替代
+			USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(MyPawn);
+
+			UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent();
+			BlackboardComp->SetValueAsBool(LowHealthKey.SelectedKeyName, AttributeComp->IsLowHealth());
 		}
 	}
 }

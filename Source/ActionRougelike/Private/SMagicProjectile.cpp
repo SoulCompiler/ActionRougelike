@@ -5,6 +5,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "SAttributeComponent.h"
+#include "SGameplayFunctionLibrary.h"
 #include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
@@ -36,15 +37,15 @@ ASMagicProjectile::ASMagicProjectile()
 
 	SphereComp->OnComponentBeginOverlap.RemoveAll(this);
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ASMagicProjectile::OnActorOverlap);
-	
+
 	DamageAmount = 20.0f;
 }
 
 void ASMagicProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	
+
+
 	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
 
 	if (ensure(AudioComp->Sound))
@@ -59,17 +60,24 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 {
 	if (OtherActor && OtherActor != GetInstigator())
 	{
-		// USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
-		// 由静态函数替代
-		USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(OtherActor);
-		
-		if (AttributeComp)
+		// 1.0版本：直接写逻辑
+		// // USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
+		// // 由静态函数替代
+		// USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(OtherActor);
+		//
+		// if (AttributeComp)
+		// {
+		// 	if (ensure(ImpactAFX))
+		// 	{
+		// 		UGameplayStatics::PlaySoundAtLocation(this, ImpactAFX, GetActorLocation(), GetActorRotation());
+		// 	}
+		// 	AttributeComp->ApplyHealthChange(GetInstigator(), -DamageAmount);
+		// 	Explode();
+		// }
+
+		// 2.0版本：静态函数
+		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
 		{
-			if (ensure(ImpactAFX))
-			{
-				UGameplayStatics::PlaySoundAtLocation(this, ImpactAFX, GetActorLocation(), GetActorRotation());
-			}
-			AttributeComp->ApplyHealthChange(GetInstigator(), -DamageAmount);
 			Explode();
 		}
 	}
@@ -88,6 +96,6 @@ void ASMagicProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Ot
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactAFX, GetActorLocation(), GetActorRotation());
 		UGameplayStatics::PlayWorldCameraShake(this, CameraShake, GetActorLocation(), 0, 5000);
 	}
-	
+
 	Destroy();
 }
