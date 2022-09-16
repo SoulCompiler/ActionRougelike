@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SAction.h"
 #include "SAttributeComponent.h"
 #include "SWorldUserWidget.h"
 #include "GameFramework/Character.h"
@@ -37,12 +38,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USAttributeComponent* AttributeComp;
 
-	UPROPERTY(VisibleAnywhere,Category = "Effects")
+	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	FName TimeToHitParamName;
 
-	UPROPERTY(EditDefaultsOnly,Category = "UI")
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> HealthBarWidgetClass;
 
 	UPROPERTY()
 	USWorldUserWidget* ActiveHealthBar;
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	USActionComponent* ActionComp;
 };

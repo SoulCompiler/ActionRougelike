@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "SProjectileBase.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
@@ -34,12 +35,16 @@ protected:
 	UFUNCTION()
 	void OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	                    int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	
-	virtual void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit) override;
+
+	virtual void OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse,
+	                        const FHitResult& Hit) override;
 protected:
-	UPROPERTY(EditDefaultsOnly,Category = "Damage")
+	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	float DamageAmount;
 
-	UPROPERTY(EditDefaultsOnly,Category = "Effects")
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	TSubclassOf<UCameraShakeBase> CameraShake;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Damage") 
+	FGameplayTag ParryTag;	// 反弹buff
 };

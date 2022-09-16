@@ -6,7 +6,7 @@
 #include "AIController.h"
 #include "BrainComponent.h"
 #include "DrawDebugHelpers.h"
-#include "SGameModeBase.h"
+#include "SActionComponent.h"
 #include "SWorldUserWidget.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/UserWidget.h"
@@ -17,7 +17,10 @@
 ASAICharacter::ASAICharacter()
 {
 	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>("PawnSensingComp");
+
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
+
+	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
 
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
@@ -86,13 +89,6 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 
 			// set lifespan，尸体残留时间
 			SetLifeSpan(10.0f);
-
-			// ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
-			// if (GM)
-			// {
-			// 	// @fixme：如果是第三方物品让角色死亡呢？
-			// 	GM->OnActorKilled(this, InstigatorActor);
-			// }
 		}
 	}
 }

@@ -31,6 +31,7 @@ void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 		FTimerDelegate Delegate;
 		Delegate.BindUFunction(this, "AttackDelay_Elapsed", Character);
 		// GetWorldTimerManager()是AActor的函数
+		// 高速重复多次的settimer会产生多个代理，导致stopAction被连续调用，触发ensure。
 		GetWorld()->GetTimerManager().SetTimer(TimerHandle_AttackDelay, Delegate, AttackAnimDelay, false);
 	}
 }

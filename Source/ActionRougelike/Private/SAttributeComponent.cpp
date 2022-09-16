@@ -56,6 +56,7 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	Health = FMath::Clamp(Health + Delta, 0.0f, HealthMax);
 
 	float ActualDelta = Health - OldHealth;
+	// @Todo: 改进以满足某些调用需要完整的伤害数值，比如伤害文本需要Delta而不是ActualDelta
 	OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
 
 	// Died
@@ -84,6 +85,7 @@ bool USAttributeComponent::IsFullHealth() const
 
 bool USAttributeComponent::IsLowHealth() const
 {
+	// @Todo:用百分比生命值替代
 	return Health <= 30.0f;
 }
 

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "SAction.h"
 #include "Components/ActorComponent.h"
 #include "SActionComponent.generated.h"
@@ -35,4 +36,8 @@ public:
 protected:
 	UPROPERTY()
 	TArray<USAction*> Actions;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags")
+	FGameplayTagContainer ActiveGameplayTags;
 };

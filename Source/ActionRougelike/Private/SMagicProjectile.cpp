@@ -4,6 +4,7 @@
 #include "SMagicProjectile.h"
 
 #include "DrawDebugHelpers.h"
+#include "SActionComponent.h"
 #include "SAttributeComponent.h"
 #include "SGameplayFunctionLibrary.h"
 #include "Components/AudioComponent.h"
@@ -74,6 +75,19 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 		// 	AttributeComp->ApplyHealthChange(GetInstigator(), -DamageAmount);
 		// 	Explode();
 		// }
+
+		// 为什么不用硬编码？每次查询Tag都要经过GameplayTag系统查询，性能消耗；就算static驻留在内存中也会导致代码框架不雅观。
+		// static FGameplayTag ParryTag = FGameplayTag::RequestGameplayTag("Status.Parrying");
+		
+		USActionComponent* ActionComp = Cast<USActionComponent>(OtherActor->GetComponentByClass(USActionComponent::StaticClass()));
+		if (ActionComp && ActionComp->ActiveGameplayTags.HasTag(ParryTag))
+		{
+			// @Warning: 如果两个人都有Parry Tag，子弹就会无限反弹，防止这个现象
+			MoveComp->Velocity = -MoveComp->Velocity;
+
+			SetInstigator(Cast<APawn>(OtherActor));
+			return;
+		}
 
 		// 2.0版本：静态函数
 		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
