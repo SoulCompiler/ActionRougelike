@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SActionComponent.h"
 #include "SAttributeComponent.h"
 #include "SInteractionComponent.h"
-#include "SPlayerState.h"
 #include "SProjectileBase.h"
 #include "GameFramework/Character.h"
 #include "SCharacter.generated.h"
@@ -25,7 +25,7 @@ class ACTIONROUGELIKE_API ASCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	ASCharacter();
-	
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -47,27 +47,26 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USAttributeComponent* AttributeComp;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Conponents")
+	USActionComponent* ActionComp;
+
 	virtual void PostInitializeComponents() override;
-	
+
 	void MoveForward(float Value);
 
 	void MoveRight(float Value);
 
-	void PrimaryAttack();
+	void SprintStart();
 
-	void PrimaryAttack_TimeElapsed();
+	void SprintStop();
+
+	void PrimaryAttack();
 
 	void PrimaryInteract();
 
 	void BlackHoleAttack();
 
-	void BlackHoleAttack_TimeElapsed();
-
 	void Dash();
-
-	void Dash_TimeElapsed();
-
-	void SpawnProjectile(TSubclassOf<AActor> ClassToSpawn);
 
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth, float Delta);
@@ -75,35 +74,5 @@ protected:
 	// 提供给InteractionComponent的GetActorEyesViewPoint()用于射线追踪，GetActorEyesViewPoint()的内部实现实际上是用了
 	// override的GetPawnViewLocation()来获取StartLocation，这里再override一下即可
 	virtual FVector GetPawnViewLocation() const override;
-
-protected:
-	UPROPERTY(EditAnywhere, Category = "Attack") // Category为变量在编辑器中的分布进行分类
-	TSubclassOf<AActor> ProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> BlackHoleProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	TSubclassOf<AActor> DashProjectileClass;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	UAnimMontage* AttackAnim;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	UParticleSystem* AttackVFX;
-
-	FTimerHandle TimerHandle_PrimaryAttack;
-
-	FTimerHandle TimerHandle_BlackHoleAttack;
-
-	FTimerHandle TimerHandle_Dash;
-
-	UPROPERTY(EditAnywhere, Category = "Attack")
-	float FiringRange;
-
-	float AttackAnimDelay;
-
-	UPROPERTY(VisibleAnywhere,Category = "Effects")
-	FName HandSocketName;
 	
 };

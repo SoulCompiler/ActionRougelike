@@ -31,10 +31,9 @@ ASCharacter::ASCharacter()
 	InteractionComp = CreateDefaultSubobject<USInteractionComponent>("InteractionComp");
 
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
-	
-	FiringRange = 5000.0f;
 
-	HandSocketName = "Muzzle_01";
+	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
+
 }
 
 void ASCharacter::PostInitializeComponents()
@@ -42,7 +41,6 @@ void ASCharacter::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	AttributeComp->OnHealthChanged.AddDynamic(this, &ASCharacter::OnHealthChanged);
-
 }
 
 // Called to bind functionality to input
@@ -57,13 +55,16 @@ void ASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 	// 将改变Controller偏航角（物体坐标的偏航角）的函数绑定到Turn的键。该函数是基类Pawn中自带的虚函数。
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::Jump);
+
+	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
 
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &ASCharacter::PrimaryAttack);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASCharacter::Jump);
-	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &ASCharacter::PrimaryInteract);
 	PlayerInputComponent->BindAction("SuperAttack", IE_Pressed, this, &ASCharacter::BlackHoleAttack);
 	PlayerInputComponent->BindAction("Dash", IE_Pressed, this, &ASCharacter::Dash);
-	AttackAnimDelay = 0.2f;
+
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &ASCharacter::SprintStart);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &ASCharacter::SprintStop);
 }
 
 void ASCharacter::HealSelf(float Amount /* = 100 */)
@@ -92,26 +93,19 @@ void ASCharacter::MoveRight(float Value)
 	AddMovementInput(RightVector, Value);
 }
 
-void ASCharacter::PrimaryAttack()
+void ASCharacter::SprintStart()
 {
-	PlayAnimMontage(AttackAnim); // 播放蒙太奇动画
-	if (ensure(AttackVFX))
-	{
-		UGameplayStatics::SpawnEmitterAttached(AttackVFX, GetMesh(), HandSocketName, FVector::ZeroVector,
-		                                       FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
-	}
-
-	// 将需要在播放动画延时中执行的函数放在Timer中。
-	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this, &ASCharacter::PrimaryAttack_TimeElapsed,
-	                                AttackAnimDelay);
-
-
-	// GetWorldTimerManager().ClearTimer(TimerHandle_PrimaryAttack);
+	ActionComp->StartActionByName(this, "Sprint");
 }
 
-void ASCharacter::PrimaryAttack_TimeElapsed()
+void ASCharacter::SprintStop()
 {
-	SpawnProjectile(ProjectileClass);
+	ActionComp->StopActionByName(this, "Sprint");
+}
+
+void ASCharacter::PrimaryAttack()
+{
+	ActionComp->StartActionByName(this, "PrimaryAttack");
 }
 
 void ASCharacter::PrimaryInteract()
@@ -124,69 +118,12 @@ void ASCharacter::PrimaryInteract()
 
 void ASCharacter::BlackHoleAttack()
 {
-	PlayAnimMontage(AttackAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_BlackHoleAttack, this, &ASCharacter::BlackHoleAttack_TimeElapsed,
-	                                AttackAnimDelay);
-}
-
-void ASCharacter::BlackHoleAttack_TimeElapsed()
-{
-	SpawnProjectile(BlackHoleProjectileClass);
+	ActionComp->StartActionByName(this, "Blackhole");
 }
 
 void ASCharacter::Dash()
 {
-	PlayAnimMontage(AttackAnim);
-	GetWorldTimerManager().SetTimer(TimerHandle_Dash, this, &ASCharacter::Dash_TimeElapsed, AttackAnimDelay);
-}
-
-void ASCharacter::Dash_TimeElapsed()
-{
-	SpawnProjectile(DashProjectileClass);
-}
-
-// 动画延时后发射子弹
-void ASCharacter::SpawnProjectile(TSubclassOf<AActor> ClassToSpawn)
-{
-	if (ensureAlways(ClassToSpawn))
-	{
-		FVector HandLocation = GetMesh()->GetSocketLocation(HandSocketName);
-
-		FVector TraceStart = CameraComp->GetComponentLocation();
-		FVector TraceEnd = TraceStart + (CameraComp->GetComponentRotation().Vector() * FiringRange);
-
-		FCollisionObjectQueryParams ObjectQueryParams;
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
-		ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
-
-		FCollisionShape Shape;
-		Shape.SetSphere(20.0f);
-
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-
-		FHitResult Hit;
-
-		if (GetWorld()->SweepSingleByObjectType(Hit, TraceStart, TraceEnd, FQuat::Identity, ObjectQueryParams, Shape,
-		                                        Params))
-		{
-			TraceEnd = Hit.ImpactPoint;
-			// DrawDebugLine(GetWorld(), SpawnLocation, ImpactLocation, FColor::Blue, false, 2.0f, 0, 2.0f);
-		}
-
-
-		FRotator TargetRotator = FRotationMatrix::MakeFromX(TraceEnd - HandLocation).Rotator();
-		// 原理和UKismetMathLibrary::FindLookAtRotation相同
-		FTransform SpawnTM(TargetRotator, HandLocation);
-
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Instigator = this;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-		GetWorld()->SpawnActor<AActor>(ClassToSpawn, SpawnTM, SpawnParams);
-	}
+	ActionComp->StartActionByName(this, "Dash");
 }
 
 void ASCharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponent* OwningComp, float NewHealth,

@@ -4,6 +4,7 @@
 #include "SPowerup_HealthPotion.h"
 
 #include "SCharacter.h"
+#include "SPlayerState.h"
 #include "GameFramework/Character.h"
 
 // Sets default values
