@@ -3,7 +3,6 @@
 
 #include "SCharacter.h"
 
-#include "DrawDebugHelpers.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -33,7 +32,6 @@ ASCharacter::ASCharacter()
 	AttributeComp = CreateDefaultSubobject<USAttributeComponent>("AttributeComp");
 
 	ActionComp = CreateDefaultSubobject<USActionComponent>("ActionComp");
-
 }
 
 void ASCharacter::PostInitializeComponents()
@@ -118,7 +116,11 @@ void ASCharacter::PrimaryInteract()
 
 void ASCharacter::BlackHoleAttack()
 {
-	ActionComp->StartActionByName(this, "Blackhole");
+	// @Todo:判断逻辑移至重写的CanStart()，不要破坏代码框架
+	if (AttributeComp->ApplyRageChange(this, -10.0f))
+	{
+		ActionComp->StartActionByName(this, "Blackhole");
+	}
 }
 
 void ASCharacter::Dash()

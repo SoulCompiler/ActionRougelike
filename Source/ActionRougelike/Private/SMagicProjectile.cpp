@@ -78,7 +78,7 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 
 		// 为什么不用硬编码？每次查询Tag都要经过GameplayTag系统查询，性能消耗；就算static驻留在内存中也会导致代码框架不雅观。
 		// static FGameplayTag ParryTag = FGameplayTag::RequestGameplayTag("Status.Parrying");
-		
+
 		USActionComponent* ActionComp = Cast<USActionComponent>(OtherActor->GetComponentByClass(USActionComponent::StaticClass()));
 		if (ActionComp && ActionComp->ActiveGameplayTags.HasTag(ParryTag))
 		{
@@ -93,6 +93,12 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
 		{
 			Explode();
+
+			// @Doubt: Explode()中的Destroy不是已经被调用了吗？为什么还能执行以下函数？
+			if (ActionComp)
+			{
+				ActionComp->AddAction(GetInstigator(), BurningActionClass);
+			}
 		}
 	}
 }

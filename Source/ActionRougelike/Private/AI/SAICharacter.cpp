@@ -95,11 +95,36 @@ void ASAICharacter::OnHealthChanged(AActor* InstigatorActor, USAttributeComponen
 
 void ASAICharacter::SetTargetActor(AActor* NewTarget)
 {
-	AAIController* AIC = Cast<AAIController>(GetController());
-	if (ensure(AIC))
+	// 我认为把这段代码写到SetTargetActor中比在OnSeePawn中更好，因为SetTargetActor是最终调用，OnSeePawn是中间调用的某一种调用。
+	if (GetTargetActor() != NewTarget)
 	{
-		AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
+		if (PlayerSpottedFlag == nullptr)
+		{
+			PlayerSpottedFlag = CreateWidget<USWorldUserWidget>(GetWorld(), PlayerSpottedWidgetClass);
+			if (PlayerSpottedFlag)
+			{
+				PlayerSpottedFlag->AttachedActor = this;
+				PlayerSpottedFlag->AddToViewport(10); // 加入视口时调用Event Construct，所以要在这之前初始化Event Construct需要的值（见蓝图）。
+			}
+		}
 
-		DrawDebugString(GetWorld(), GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.0f, true);
+		AAIController* AIC = Cast<AAIController>(GetController());
+		if (ensure(AIC))
+		{
+			AIC->GetBlackboardComponent()->SetValueAsObject("TargetActor", NewTarget);
+
+			DrawDebugString(GetWorld(), GetActorLocation(), "PLAYER SPOTTED", nullptr, FColor::White, 4.0f, true);
+		}
 	}
+}
+
+AActor* ASAICharacter::GetTargetActor() const
+{
+	AAIController* AIC = Cast<AAIController>(GetController());
+	if (AIC)
+	{
+		return Cast<AActor>(AIC->GetBlackboardComponent()->GetValueAsObject("TargetActor"));
+	}
+
+	return nullptr;
 }

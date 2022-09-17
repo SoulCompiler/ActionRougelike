@@ -42,6 +42,7 @@ UWorld* USAction::GetWorld() const
 bool USAction::CanStart_Implementation(AActor* Instigator)
 {
 	// 防止在action未结束时覆盖
+	// @Todo: CanStart()判断的是技能是否在执行，但是对于某些debuff来说（火男的被动），如何处理debuff刷新的逻辑？
 	if (IsRunning())
 	{
 		return false;

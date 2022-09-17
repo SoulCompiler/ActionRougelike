@@ -181,8 +181,12 @@ void ASGameModeBase::OnPowerupSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrap
 		return;
 	}
 
-	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
-
+	// GetResultsAsLocations()已被启用
+	// TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
+	// @Todo: 如何筛选有效的结果？
+	TArray<FVector> Locations;
+	QueryInstance->GetQueryResultsAsLocations(Locations);
+	
 	// 把之前使用过的位置储存起来，这样我们可以更快地计算出距离
 	TArray<FVector> UsedLocations;
 

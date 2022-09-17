@@ -15,7 +15,7 @@ void USActionComponent::BeginPlay()
 
 	for (TSubclassOf<USAction> ActionClass : DefaultActions)
 	{
-		AddAction(ActionClass);
+		AddAction(GetOwner(), ActionClass);
 	}
 }
 
@@ -28,7 +28,7 @@ void USActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::White, DebugMsg);
 }
 
-void USActionComponent::AddAction(TSubclassOf<USAction> ActionClass)
+void USActionComponent::AddAction(AActor* Instigator, TSubclassOf<USAction> ActionClass)
 {
 	if (!ensure(ActionClass))
 	{
@@ -39,6 +39,22 @@ void USActionComponent::AddAction(TSubclassOf<USAction> ActionClass)
 	if (ensure(NewAction))
 	{
 		Actions.Add(NewAction);
+
+		// @Todo: CanStart()判断的是技能是否在执行，但是对于某些debuff来说（火男的被动），如何处理debuff刷新的逻辑？
+		// @Warning: 在debuff期间被加入同一个debuff会叠加，如果一个debuff造成3次灼烧，在灼烧期间再被施加一个灼烧debuff，最终灼烧结果是六次。它们之间是独立计算的，请改进以支持相同buff叠加和更新debuff结束时间。
+		if (NewAction->bAutoStart && ensure(NewAction->CanStart(Instigator)))
+		{
+			NewAction->StartAction(Instigator);
+		}
+	}
+}
+
+void USActionComponent::RemoveAction(USAction* ActionToRemove)
+{
+	if (ensure(ActionToRemove) && !ActionToRemove->IsRunning())
+	{
+		// 虚幻自带的垃圾回收系统会回收野指针
+		Actions.Remove(ActionToRemove);
 	}
 }
 

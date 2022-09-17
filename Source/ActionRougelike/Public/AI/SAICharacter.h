@@ -31,13 +31,19 @@ protected:
 	UFUNCTION()
 	void SetTargetActor(AActor* NewTarget);
 
+	UFUNCTION(BlueprintCallable, Category = "AI")
+	AActor* GetTargetActor() const;
+
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UPawnSensingComponent* PawnSensingComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USAttributeComponent* AttributeComp;
-
+	
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	USActionComponent* ActionComp;
+	
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	FName TimeToHitParamName;
 
@@ -47,6 +53,9 @@ protected:
 	UPROPERTY()
 	USWorldUserWidget* ActiveHealthBar;
 
-	UPROPERTY(VisibleAnywhere, Category = "Components")
-	USActionComponent* ActionComp;
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<UUserWidget> PlayerSpottedWidgetClass;
+	
+	UPROPERTY()
+	USWorldUserWidget* PlayerSpottedFlag;
 };
