@@ -23,6 +23,7 @@ void USAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 		Character->PlayAnimMontage(AttackAnim); // 播放蒙太奇动画
 		if (ensure(AttackVFX))
 		{
+			// 应该在所有客户端播放该特效
 			UGameplayStatics::SpawnEmitterAttached(AttackVFX, Character->GetMesh(), HandSocketName, FVector::ZeroVector,
 			                                       FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
 		}
@@ -60,6 +61,7 @@ void USAction_ProjectileAttack::AttackDelay_Elapsed(ACharacter* InstigatorCharac
 
 		FHitResult Hit;
 
+		// 射线追踪应该在客户端做，然后将结果发给服务端
 		if (GetWorld()->SweepSingleByObjectType(Hit, TraceStart, TraceEnd, FQuat::Identity, ObjectQueryParams, Shape,
 		                                        Params))
 		{
@@ -76,6 +78,7 @@ void USAction_ProjectileAttack::AttackDelay_Elapsed(ACharacter* InstigatorCharac
 		SpawnParams.Instigator = InstigatorCharacter;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+		// SpawnActor应该在服务端做
 		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParams);
 	}
 

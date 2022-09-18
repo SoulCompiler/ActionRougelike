@@ -19,6 +19,7 @@ class ACTIONROUGELIKE_API ASGameModeBase : public AGameModeBase
 public:
 	ASGameModeBase();
 
+	// 默认仅在服务端运行
 	virtual void StartPlay() override;
 
 	// 控制台中执行

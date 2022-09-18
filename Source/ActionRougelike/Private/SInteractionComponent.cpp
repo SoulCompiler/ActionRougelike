@@ -64,7 +64,7 @@ void USInteractionComponent::FindBestInteractable()
 	{
 		if (bDebugDraw)
 		{
-			DrawDebugSphere(GetWorld(), Hit.ImpactPoint, TraceRadius, 32, LineColor, false, 2.0f); // 可视化debug的球体k
+			DrawDebugSphere(GetWorld(), Hit.ImpactPoint, TraceRadius, 32, LineColor, false, 0.0f); // 可视化debug的球体k
 		}
 
 		AActor* HitActor = Hit.GetActor();
@@ -107,8 +107,8 @@ void USInteractionComponent::FindBestInteractable()
 
 	if (bDebugDraw)
 	{
-		DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 2.0f, 0, 2.0f); // 可视化debug的线条
-	}
+		DrawDebugLine(GetWorld(), EyeLocation, End, LineColor, false, 0.0f, 0, 2.0f); // 可视化debug的线条
+	} 
 }
 
 
@@ -117,13 +117,25 @@ void USInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FindBestInteractable();
+	// 保证这段代码只在本地运行
+	APawn* MyPawn = Cast<APawn>(GetOwner());
+	if (MyPawn->IsLocallyControlled())
+	{
+		FindBestInteractable();
+	}
 }
 
 // 主动式的交互，作为Pawn的组件主动检测可交互物体并调用其交互函数
 void USInteractionComponent::PrimaryInteract()
 {
-	if (FocusedActor == nullptr)
+	// @Question: UE的网络同步是如何处理指针传输的
+	// @Answer: 如果将rpc函数声明为带指针参数的，那么在传递该指针的时候UE会将指针转换为对象ID，由于CS两端的对象ID都是相同的，所以在本地处理的时候就用本地的对象的指针作替换。
+	ServerInteract(FocusedActor);
+}
+
+void USInteractionComponent::ServerInteract_Implementation(AActor* InFocus)
+{
+	if (InFocus == nullptr)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "No Focus Actor to interact.");
 		return;
@@ -131,5 +143,5 @@ void USInteractionComponent::PrimaryInteract()
 
 	APawn* MyPawn = Cast<APawn>(GetOwner()); // 类型转换
 
-	ISGameplayInterface::Execute_Interact(FocusedActor, MyPawn); // 调用者调用BlueprintNativeEvent函数的方式
+	ISGameplayInterface::Execute_Interact(InFocus, MyPawn); // 调用者调用BlueprintNativeEvent函数的方式
 }

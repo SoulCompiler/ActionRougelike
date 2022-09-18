@@ -31,11 +31,11 @@ public:
 	static bool IsActorAlive(AActor* Actor);
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	// EditDefaultOnly表示该变量只能在蓝图的属性窗口编辑，不能在level的属性窗口编辑。
 	float Health;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float HealthMax;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
@@ -43,6 +43,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
 	float RageMax;
+
+	// UPROPERTY(ReplicatedUsing="")
+	// bool bIsAlive;
 
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
@@ -71,4 +74,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	bool ApplyRageChange(AActor* InstigatorActor, float Delta);
+
+protected:
+	// 因为Health变量已经被同步了，所以这个装饰变量被同步后的反应的函数可以是Unreliable的；
+	// 但是，因为这个函数的实现时组播OnHealthChanged这个事件的发生，假如某个绑定该事件的函数是非常重要的会影响游戏状态的，
+	// 比如SCharacter.cpp中的OnHealthChanged就处理了玩家死亡的逻辑，这是非常重要的。这时这个函数就必须是Reliable的
+	UFUNCTION(NetMulticast, Reliable)	// @FIXME: mark as unreliable once we move the 'state' our of scharacter
+	void MulticastHealthChanged(AActor* InstigatorActor, float NewHealth, float Delta);
 };

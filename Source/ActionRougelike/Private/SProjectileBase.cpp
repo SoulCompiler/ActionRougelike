@@ -26,6 +26,9 @@ ASProjectileBase::ASProjectileBase()
 
 	AudioComp = CreateDefaultSubobject<UAudioComponent>("AudioComp");
 	AudioComp->SetupAttachment(SphereComp);
+
+	// 启动该类对象的同步，仅服务端生成该对象时向客户端同步，与之后发生的事无关
+	SetReplicates(true);
 }
 
 void ASProjectileBase::OnActorHit(UPrimitiveComponent* HitComponent, AActor* OtherActor,

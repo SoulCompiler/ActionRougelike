@@ -19,11 +19,11 @@ protected:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 public:
-	UPROPERTY(BlueprintReadOnly, Category = "UI")
+	UPROPERTY(BlueprintReadOnly, Category = "UI", meta = (ExposeOnSpawn=true))	// meta将该变量暴露为一个函数引脚
 	AActor* AttachedActor;
 
 	UPROPERTY(EditAnywhere, Category = "UI")
-	FVector WorldOffset;	// UI显示位置的相对偏移，比如血量条应该在头顶上
+	FVector WorldOffset; // UI显示位置的相对偏移，比如血量条应该在头顶上
 
 protected:
 	UPROPERTY(meta = (BindWidget))

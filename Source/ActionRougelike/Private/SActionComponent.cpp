@@ -7,6 +7,8 @@
 USActionComponent::USActionComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
+
+	SetIsReplicatedByDefault(true);
 }
 
 void USActionComponent::BeginPlay()
@@ -19,6 +21,11 @@ void USActionComponent::BeginPlay()
 	}
 }
 
+
+void USActionComponent::ServerStartAction_Implementation(AActor* Instigator, FName ActionName)
+{
+	StartActionByName(Instigator, ActionName);
+}
 
 void USActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -69,6 +76,13 @@ bool USActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 				FString FailedMsg = FString::Printf(TEXT("Failed to run:%s"), *ActionName.ToString());
 				GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red, FailedMsg);
 				continue;;
+			}
+
+			// Is Client?
+			if (!GetOwner()->HasAuthority())
+			{
+				// @Todo：只将RPC发给了服务端。没有将运行结果同步到客户端
+				ServerStartAction(Instigator, ActionName);
 			}
 
 			Action->StartAction(Instigator);

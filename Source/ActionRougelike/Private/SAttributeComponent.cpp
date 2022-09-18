@@ -4,6 +4,7 @@
 #include "SAttributeComponent.h"
 
 #include "SGameModeBase.h"
+#include "Net/UnrealNetwork.h"
 
 // 控制台变量，伤害系数
 static TAutoConsoleVariable<float> CVarDamageMultiplier(TEXT("su.DamageMultiplier"), 1.0f,TEXT("Global Damage Modifier for Attribute Component."), ECVF_Cheat);
@@ -15,6 +16,8 @@ USAttributeComponent::USAttributeComponent()
 	Health = 100.0f;
 	RageMax = 100.0f;
 	Rage = 0.0f;
+
+	SetIsReplicatedByDefault(true);
 }
 
 USAttributeComponent* USAttributeComponent::GetAttributes(AActor* FromActor)
@@ -59,9 +62,14 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 	Health = FMath::Clamp(Health + Delta, 0.0f, HealthMax);
 
 	float ActualDelta = Health - OldHealth;
-	// @Todo: 改进以满足某些调用需要完整的伤害数值，比如伤害文本需要Delta而不是ActualDelta
-	OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
 
+	// @Todo: 改进以满足某些调用需要完整的伤害数值，比如伤害文本需要Delta而不是ActualDelta
+	// OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
+
+	if (ActualDelta != 0.0f)
+	{
+		MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
+	}
 
 	// Died
 	if (ActualDelta < 0.0f && Health == 0.0f)
@@ -119,4 +127,21 @@ bool USAttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Delta)
 	OnRageChanged.Broadcast(InstigatorActor, this, Rage, ActualDelta);
 
 	return true;
+}
+
+void USAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(USAttributeComponent, Health);
+	DOREPLIFETIME(USAttributeComponent, HealthMax);
+
+	// 带条件的变量同步，当该变量更新时，只有主人才会看到变化。可以优化性能
+	// DOREPLIFETIME_CONDITION(USAttributeComponent, HealthMax, COND_OwnerOnly);
+}
+
+
+void USAttributeComponent::MulticastHealthChanged_Implementation(AActor* InstigatorActor, float NewHealth, float Delta)
+{
+	OnHealthChanged.Broadcast(InstigatorActor, this, NewHealth, Delta);
 }

@@ -38,11 +38,12 @@ void ASExplosiveBarrel::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Ot
                                    UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
 	ForceComp->FireImpulse(); // 执行发射脉冲的函数
-
-	// USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));	// 由静态函数替代
-	USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(OtherActor);
-
+	
 	// 使用ByClass后缀的函数时，要以ClassName::StaticClass()作为参数
+	// USAttributeComponent* AttributeComp = Cast<USAttributeComponent>(OtherActor->GetComponentByClass(USAttributeComponent::StaticClass()));
+	// 由静态函数替代
+	USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(OtherActor);
+	
 	if (AttributeComp)
 	{
 		AttributeComp->ApplyHealthChange(OtherActor, -50.f);

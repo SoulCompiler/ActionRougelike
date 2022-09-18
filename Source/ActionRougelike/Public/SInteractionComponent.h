@@ -31,6 +31,12 @@ public:
 
 	void PrimaryInteract();
 
+
+	// Reliable：Will always arrive,eventually.Request will be re-sent unless an acknowledgment was received
+	// Unreliable：Not guaranteed,packet can get lost and won't retry.
+	UFUNCTION(Server, Reliable)
+	void ServerInteract(AActor* InFocus	/* In表示输入方 */);
+
 protected:
 	UPROPERTY()
 	AActor* FocusedActor;
