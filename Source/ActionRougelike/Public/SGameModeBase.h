@@ -72,4 +72,7 @@ protected:
 	/* 游戏开始时生成的拾取物的数量 */
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
 	int32 DesiredPowerupCount;
+
+	UPROPERTY(EditDefaultsOnly,Category = "Bonus")
+	float KillBonus;
 };

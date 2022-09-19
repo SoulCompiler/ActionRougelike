@@ -23,6 +23,8 @@ ASGameModeBase::ASGameModeBase()
 	DesiredPowerupCount = 10;
 	RequiredPowerupDistance = 2000;
 
+	KillBonus = 50.0f;
+
 	PlayerStateClass = ASPlayerState::StaticClass();
 }
 
@@ -72,8 +74,7 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 			ASPlayerState* KillerState = KillerPlayer->GetPlayerState<ASPlayerState>();
 			if (KillerState)
 			{
-				// @todo: 解决硬编码
-				KillerState->ApplyCreditsChange(50.0f);
+				KillerState->ApplyCreditsChange(VictimActor, KillBonus);
 			}
 		}
 
@@ -98,8 +99,7 @@ void ASGameModeBase::OnActorKilled(AActor* VictimActor, AActor* Killer)
 			ASPlayerState* KillerState = KillerPlayer->GetPlayerState<ASPlayerState>();
 			if (KillerState)
 			{
-				// @todo: 解决硬编码
-				KillerState->ApplyCreditsChange(50.0f);
+				KillerState->ApplyCreditsChange(VictimActor, KillBonus);
 			}
 		}
 	}
@@ -186,7 +186,7 @@ void ASGameModeBase::OnPowerupSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrap
 	// @Todo: 如何筛选有效的结果？
 	TArray<FVector> Locations;
 	QueryInstance->GetQueryResultsAsLocations(Locations);
-	
+
 	// 把之前使用过的位置储存起来，这样我们可以更快地计算出距离
 	TArray<FVector> UsedLocations;
 

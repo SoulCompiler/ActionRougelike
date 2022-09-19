@@ -7,8 +7,9 @@
 
 ASPowerup_Credits::ASPowerup_Credits()
 {
-
 	CoolDownTime = 10.0f;
+
+	CreditsCost = -30.0f;
 }
 
 void ASPowerup_Credits::Interact_Implementation(APawn* InstigatorPawn)
@@ -16,10 +17,8 @@ void ASPowerup_Credits::Interact_Implementation(APawn* InstigatorPawn)
 	ASPlayerState* InstigatorState = InstigatorPawn->GetPlayerState<ASPlayerState>();
 	if (ensure(InstigatorState))
 	{
-		// @todo: 改进硬编码
-		InstigatorState->ApplyCreditsChange(30);
-		
+		InstigatorState->ApplyCreditsChange(this, -CreditsCost);
+
 		HideAndCoolDownPowerup();
 	}
 }
-

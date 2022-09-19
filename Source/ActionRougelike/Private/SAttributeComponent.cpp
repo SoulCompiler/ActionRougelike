@@ -49,6 +49,13 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 		return false;
 	}
 
+	// @cmt22: 1.0，根据Authority来限制客户端修改游戏状态。但是返回的false会导致调用者进错误的分支
+	// if (!GetOwner()->HasAuthority())
+	// {
+	// 	return false;
+	// }
+
+
 	if (Delta < 0.0f)
 	{
 		float DamageMultiplier = CVarDamageMultiplier.GetValueOnGameThread();
@@ -59,30 +66,56 @@ bool USAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Delt
 
 	float OldHealth = Health;
 
-	Health = FMath::Clamp(Health + Delta, 0.0f, HealthMax);
-
-	float ActualDelta = Health - OldHealth;
-
-	// @Todo: 改进以满足某些调用需要完整的伤害数值，比如伤害文本需要Delta而不是ActualDelta
-	// OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
-
-	if (ActualDelta != 0.0f)
+	// @cmt22: 2.0，仅对关键变量的修改语句设置访问权
+	float NewHealth = FMath::Clamp(Health + Delta, 0.0f, HealthMax);
+	float ActualDelta = NewHealth - OldHealth;
+	// @cmt22：Server区
+	if (GetOwner()->HasAuthority())
 	{
-		MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
-	}
+		// @cmt22: 客户端不允许修改该值
+		Health = NewHealth;
 
-	// Died
-	if (ActualDelta < 0.0f && Health == 0.0f)
-	{
-		ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
-		if (GM)
+		if (ActualDelta != 0.0f)
 		{
-			// @fixme：如果是第三方物品让角色死亡呢？
-			GM->OnActorKilled(GetOwner(), InstigatorActor);
+			MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
+		}
+
+		// Died
+		if (ActualDelta < 0.0f && Health == 0.0f)
+		{
+			ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
+			if (GM)
+			{
+				// @fixme：如果是第三方物品让角色死亡呢？
+				GM->OnActorKilled(GetOwner(), InstigatorActor);
+			}
 		}
 	}
 
-	return ActualDelta != 0; // 返回bool类型变量是为了之后判断这个生命值改变是否有效而准备的。
+	// @Todo: 改进以满足某些调用需要完整的伤害数值，比如伤害文本需要Delta而不是ActualDelta
+	// OnHealthChanged.Broadcast(InstigatorActor, this, Health, ActualDelta);
+	/*	↓
+		↓
+		↓	*/
+	// @cmt22: 移至Server区
+	// if (ActualDelta != 0.0f)
+	// {
+	// 	MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
+	// }
+
+	// @cmt22: 移至server区
+	// Died
+	// if (ActualDelta < 0.0f && Health == 0.0f)
+	// {
+	// 	ASGameModeBase* GM = GetWorld()->GetAuthGameMode<ASGameModeBase>();
+	// 	if (GM)
+	// 	{
+	// 		// @fixme：如果是第三方物品让角色死亡呢？
+	// 		GM->OnActorKilled(GetOwner(), InstigatorActor);
+	// 	}
+	// }
+
+	return ActualDelta != 0;
 }
 
 bool USAttributeComponent::IsAlive() const
@@ -111,6 +144,11 @@ float USAttributeComponent::GetHealthMax() const
 	return HealthMax;
 }
 
+float USAttributeComponent::GetHealth() const
+{
+	return Health;
+}
+
 bool USAttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Delta)
 {
 	const float OldRage = Rage;
@@ -121,12 +159,24 @@ bool USAttributeComponent::ApplyRageChange(AActor* InstigatorActor, float Delta)
 		return false;
 	}
 
-	Rage = FMath::Clamp(NewRage, 0.0f, RageMax);
+	if (GetOwner()->HasAuthority())
+	{
+		Rage = FMath::Clamp(NewRage, 0.0f, RageMax);
 
-	const float ActualDelta = Rage - OldRage;
-	OnRageChanged.Broadcast(InstigatorActor, this, Rage, ActualDelta);
+		const float ActualDelta = Rage - OldRage;
+
+		if (ActualDelta != 0.0f)
+		{
+			MulticastRageChanged(InstigatorActor, Rage, ActualDelta);
+		}
+	}
 
 	return true;
+}
+
+void USAttributeComponent::MulticastRageChanged_Implementation(AActor* InstigatorActor, float NewRage, float Delta)
+{
+	OnRageChanged.Broadcast(InstigatorActor, this, NewRage, Delta);
 }
 
 void USAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -135,6 +185,9 @@ void USAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 
 	DOREPLIFETIME(USAttributeComponent, Health);
 	DOREPLIFETIME(USAttributeComponent, HealthMax);
+
+	DOREPLIFETIME(USAttributeComponent, Rage);
+	DOREPLIFETIME(USAttributeComponent, RageMax);
 
 	// 带条件的变量同步，当该变量更新时，只有主人才会看到变化。可以优化性能
 	// DOREPLIFETIME_CONDITION(USAttributeComponent, HealthMax, COND_OwnerOnly);

@@ -19,7 +19,6 @@ protected:
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 
 protected:
-
-	UPROPERTY(EditAnywhere, Category = "Healing")
+	UPROPERTY(EditDefaultsOnly, Category = "Healing")
 	float HealingAmount;
 };

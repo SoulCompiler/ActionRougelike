@@ -24,12 +24,16 @@ public:
 	float GetCredits() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Credits")
-	bool ApplyCreditsChange(float Delta);
+	bool ApplyCreditsChange(AActor* InstigatorActor, float Delta);
 
 protected:
-	UPROPERTY(VisibleAnywhere, Category = "Credits")
+	UFUNCTION(NetMulticast, Reliable) // @FIXME: mark as unreliable once we move the 'state' our of scharacter
+	void MulticastCreditsChanged(float NewCredits, float Delta);
+
+protected:
+	UPROPERTY(Replicated, VisibleAnywhere, Category = "Credits")
 	float Credits;
-	
+
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnCreditsChanged OnCreditsChanged;
 };

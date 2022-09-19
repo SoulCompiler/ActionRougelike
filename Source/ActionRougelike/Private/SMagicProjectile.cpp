@@ -5,9 +5,7 @@
 
 #include "DrawDebugHelpers.h"
 #include "SActionComponent.h"
-#include "SAttributeComponent.h"
 #include "SGameplayFunctionLibrary.h"
-#include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 
@@ -48,11 +46,7 @@ void ASMagicProjectile::BeginPlay()
 
 
 	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
-
-	if (ensure(AudioComp->Sound))
-	{
-		AudioComp->Play();
-	}
+	
 }
 
 void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -90,12 +84,13 @@ void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent,
 		}
 
 		// 2.0版本：静态函数
+		// @cmt22: 应用1.0版本的客户端限制后，return false导致该分支无法进入
 		if (USGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
 		{
 			Explode();
 
-			// @Doubt: Explode()中的Destroy不是已经被调用了吗？为什么还能执行以下函数？
-			if (ActionComp)
+			// @Doubt: Explode()中的Destroy不是已经被调用了吗？为什么还能执行以下函数？搞清楚Destroy函数的实现。
+			if (ActionComp && HasAuthority())
 			{
 				ActionComp->AddAction(GetInstigator(), BurningActionClass);
 			}
@@ -110,12 +105,5 @@ void ASMagicProjectile::OnActorHit(UPrimitiveComponent* HitComponent, AActor* Ot
 	// Super::OnActorHit(HitComponent, OtherActor, OtherComponent, NormalImpulse, Hit);
 	DrawDebugSphere(GetWorld(), GetActorLocation(), 100, 12, FColor::Red, false, 1.0);
 
-	if (ensure(ImpactVFX) && ensure(ImpactAFX) && ensure(CameraShake))
-	{
-		UGameplayStatics::SpawnEmitterAtLocation(this, ImpactVFX, GetActorLocation(), GetActorRotation());
-		UGameplayStatics::PlaySoundAtLocation(this, ImpactAFX, GetActorLocation(), GetActorRotation());
-		UGameplayStatics::PlayWorldCameraShake(this, CameraShake, GetActorLocation(), 0, 5000);
-	}
-
-	Destroy();
+	Explode();
 }

@@ -98,16 +98,8 @@ void ASAICharacter::SetTargetActor(AActor* NewTarget)
 	// 我认为把这段代码写到SetTargetActor中比在OnSeePawn中更好，因为SetTargetActor是最终调用，OnSeePawn是中间调用的某一种调用。
 	if (GetTargetActor() != NewTarget)
 	{
-		if (PlayerSpottedFlag == nullptr)
-		{
-			PlayerSpottedFlag = CreateWidget<USWorldUserWidget>(GetWorld(), PlayerSpottedWidgetClass);
-			if (PlayerSpottedFlag)
-			{
-				PlayerSpottedFlag->AttachedActor = this;
-				PlayerSpottedFlag->AddToViewport(10); // 加入视口时调用Event Construct，所以要在这之前初始化Event Construct需要的值（见蓝图）。
-			}
-		}
-
+		MulticastPawnSeen();
+		
 		AAIController* AIC = Cast<AAIController>(GetController());
 		if (ensure(AIC))
 		{
@@ -127,4 +119,17 @@ AActor* ASAICharacter::GetTargetActor() const
 	}
 
 	return nullptr;
+}
+
+void ASAICharacter::MulticastPawnSeen_Implementation()
+{
+	if (PlayerSpottedFlag == nullptr)
+	{
+		PlayerSpottedFlag = CreateWidget<USWorldUserWidget>(GetWorld(), PlayerSpottedWidgetClass);
+		if (PlayerSpottedFlag)
+		{
+			PlayerSpottedFlag->AttachedActor = this;
+			PlayerSpottedFlag->AddToViewport(10); // 加入视口时调用Event Construct，所以要在这之前初始化Event Construct需要的值（见蓝图）。
+		}
+	}
 }

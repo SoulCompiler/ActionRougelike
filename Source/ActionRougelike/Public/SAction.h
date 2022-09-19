@@ -6,6 +6,22 @@
 #include "GameplayTagContainer.h"
 #include "SAction.generated.h"
 
+// 用于网络同步的变量包
+USTRUCT()
+struct FActionRepData
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	bool bIsRunning;
+
+	// UPROPERTY(NotReplicated)		// 表示该变量不需要同步
+	UPROPERTY()
+	AActor* Instigator;
+};
+
+
 class USActionComponent;
 
 /**
@@ -32,10 +48,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool IsRunning() const;
 
+	virtual bool IsSupportedForNetworking() const override
+	{
+		return true;
+	}
+
+	void Initialize(USActionComponent* NewActionComp);
 
 protected:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	USActionComponent* GetOwningComponent() const;
+
+	UFUNCTION()
+	void OnRep_RepData();
+
 
 public:
 	/* Action nickname to start/stop without a reference to the object */
@@ -54,5 +80,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Tags")
 	FGameplayTagContainer BlockedTags;
 
-	bool bIsRunning;
+	UPROPERTY(ReplicatedUsing="OnRep_RepData")
+	// bool bIsRunning;
+	/*	↓
+		↓
+		↓	*/
+	FActionRepData RepData;
+
+	UPROPERTY(Replicated)
+	USActionComponent* ActionComp;
 };

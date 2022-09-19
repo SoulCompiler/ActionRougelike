@@ -15,6 +15,7 @@ ASPowerup_HealthPotion::ASPowerup_HealthPotion()
 
 	HealingAmount = 20.0f;
 	CoolDownTime = 10.0f;
+	CreditsCost = 20.0f;
 }
 
 void ASPowerup_HealthPotion::Interact_Implementation(APawn* InstigatorPawn)
@@ -30,9 +31,12 @@ void ASPowerup_HealthPotion::Interact_Implementation(APawn* InstigatorPawn)
 	ASPlayerState* InstigatorState = InstigatorPawn->GetPlayerState<ASPlayerState>();
 	if (ensure(InstigatorState) && ensure(AttributeComp) && !AttributeComp->IsFullHealth())
 	{
-		// @todo: 改进硬编码
-		if (InstigatorState->ApplyCreditsChange(-20.0f) && AttributeComp->ApplyHealthChange(this, HealingAmount))
+		if (InstigatorState->ApplyCreditsChange(this, -CreditsCost))
 		{
+			// if (AttributeComp->ApplyHealthChange(this, HealingAmount))
+			// 不管血是不是满的都加
+			AttributeComp->ApplyHealthChange(this, HealingAmount);
+
 			HideAndCoolDownPowerup();
 		}
 	}

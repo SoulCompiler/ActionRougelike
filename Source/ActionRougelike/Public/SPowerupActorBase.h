@@ -25,6 +25,9 @@ protected:
 
 	void SetPowerupState(bool bIsActive);
 
+	UFUNCTION()
+	void OnRep_IsActive();
+
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	USphereComponent* SphereComp;
@@ -34,6 +37,12 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Powerup")
 	float CoolDownTime;
+
+	UPROPERTY(EditDefaultsOnly,Category = "Cost")
+	float CreditsCost;
+
+	UPROPERTY(ReplicatedUsing="OnRep_IsActive")
+	bool bIsActive;
 
 	FTimerHandle TimerHandle_ReSpawn;
 };

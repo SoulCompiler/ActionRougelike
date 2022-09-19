@@ -15,6 +15,11 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnHealthChanged, AActor*, Instiga
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnRageChanged, AActor*, InstigatorActor, USAttributeComponent*,
                                               OwningComp, float, NewRage, float, Delta);
 
+// Alternative:Share the same signature with generic names(共享参数列表的组播可以共用一个签名)
+// DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnAttribChanged, AActor*, InstigatorActor, USAttributeComponent*,
+// 											  OwningComp, float, NewRage, float, Delta);
+
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class ACTIONROUGELIKE_API USAttributeComponent : public UActorComponent
 {
@@ -38,10 +43,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float HealthMax;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float Rage;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attributes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Replicated, Category = "Attributes")
 	float RageMax;
 
 	// UPROPERTY(ReplicatedUsing="")
@@ -73,12 +78,18 @@ public:
 	float GetHealthMax() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	float GetHealth() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	bool ApplyRageChange(AActor* InstigatorActor, float Delta);
 
 protected:
 	// 因为Health变量已经被同步了，所以这个装饰变量被同步后的反应的函数可以是Unreliable的；
 	// 但是，因为这个函数的实现时组播OnHealthChanged这个事件的发生，假如某个绑定该事件的函数是非常重要的会影响游戏状态的，
 	// 比如SCharacter.cpp中的OnHealthChanged就处理了玩家死亡的逻辑，这是非常重要的。这时这个函数就必须是Reliable的
-	UFUNCTION(NetMulticast, Reliable)	// @FIXME: mark as unreliable once we move the 'state' our of scharacter
+	UFUNCTION(NetMulticast, Reliable) // @FIXME: mark as unreliable once we move the 'state' our of scharacter
 	void MulticastHealthChanged(AActor* InstigatorActor, float NewHealth, float Delta);
+
+	UFUNCTION(NetMulticast, Unreliable) // @FIXME: mark as unreliable once we move the 'state' our of scharacter
+	void MulticastRageChanged(AActor* InstigatorActor, float NewRage, float Delta);
 };

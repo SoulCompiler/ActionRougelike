@@ -42,9 +42,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	float DamageAmount;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Effects")
-	TSubclassOf<UCameraShakeBase> CameraShake;
-
 	UPROPERTY(EditDefaultsOnly, Category = "Damage")
 	FGameplayTag ParryTag; // 反弹buff
 
