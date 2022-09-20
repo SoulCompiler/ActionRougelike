@@ -15,10 +15,13 @@ class ACTIONROUGELIKE_API USActionEffect : public USAction
 	GENERATED_BODY()
 public:
 	USActionEffect();
-	
+
 	virtual void StartAction_Implementation(AActor* Instigator) override;
 
 	virtual void StopAction_Implementation(AActor* Instigator) override;
+
+	UFUNCTION(BlueprintCallable, Category = "Action")
+	float GetTimeRemaining() const;
 
 protected:
 	UFUNCTION(BlueprintNativeEvent, Category = "Effect")
