@@ -34,6 +34,22 @@ bool ASPlayerState::ApplyCreditsChange(AActor* InstigatorActor, float Delta)
 	return true;
 }
 
+void ASPlayerState::SavePlayerState_Implementation(USSaveGame* SaveObject)
+{
+	if (SaveObject)
+	{
+		SaveObject->Creadits = Credits;
+	}
+}
+
+void ASPlayerState::LoadPlayerState_Implementation(USSaveGame* SaveObject)
+{
+	if (SaveObject)
+	{
+		Credits = SaveObject->Creadits;
+	}
+}
+
 void ASPlayerState::MulticastCreditsChanged_Implementation(float NewCredits, float Delta)
 {
 	OnCreditsChanged.Broadcast(this, NewCredits, Delta);

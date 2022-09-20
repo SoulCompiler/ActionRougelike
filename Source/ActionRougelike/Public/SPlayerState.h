@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SSaveGame.h"
 #include "GameFramework/PlayerState.h"
 #include "SPlayerState.generated.h"
 
@@ -26,6 +27,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Credits")
 	bool ApplyCreditsChange(AActor* InstigatorActor, float Delta);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void SavePlayerState(USSaveGame* SaveObject);
+
+	UFUNCTION(BlueprintNativeEvent)
+	void LoadPlayerState(USSaveGame* SaveObject);
 protected:
 	UFUNCTION(NetMulticast, Reliable) // @FIXME: mark as unreliable once we move the 'state' our of scharacter
 	void MulticastCreditsChanged(float NewCredits, float Delta);

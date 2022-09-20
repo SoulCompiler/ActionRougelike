@@ -25,4 +25,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)		// BlueprintCallable使得函数可以在蓝图中被调用
 	void Interact(APawn* InstigatorPawn); // 该声明的Implementation中的显式参数APawn是调用者，隐式参数UObject*是被调用者
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnActorLoaded();
 };

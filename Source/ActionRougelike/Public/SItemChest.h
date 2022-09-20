@@ -17,6 +17,8 @@ public:
 
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override; // 因为UFUNCTION是Native的，所以实现和声明的函数名不一样
 
+	virtual void OnActorLoaded_Implementation() override;
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
@@ -30,8 +32,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* LidMesh; // 箱子盖子
 
-	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly) // RepNotify
+	UPROPERTY(ReplicatedUsing="OnRep_LidOpened", BlueprintReadOnly, SaveGame) // RepNotify
 	bool bLidOpened;
+
 public:
 	UPROPERTY(EditAnywhere)
 	float TargetPitch;

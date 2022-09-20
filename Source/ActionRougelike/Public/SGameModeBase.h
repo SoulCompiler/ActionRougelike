@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SSaveGame.h"
 #include "EnvironmentQuery/EnvQuery.h"
 #include "EnvironmentQuery/EnvQueryInstanceBlueprintWrapper.h"
 #include "GameFramework/GameModeBase.h"
@@ -28,6 +29,17 @@ public:
 
 	UFUNCTION()
 	virtual void OnActorKilled(AActor* VictimActor, AActor* Killer); // 负责更新玩家战绩和使玩家重生
+
+	UFUNCTION(BlueprintCallable, Category = "SaveGame")
+	void WriteSaveGame();
+
+	// LoadGame不用BPcallable，只在C++中运行
+	void LoadSaveGame();
+
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
+	
 protected:
 	UFUNCTION()
 	void SpawnBotTimerElapsed();
@@ -60,7 +72,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float MaxBotCount;
-	
+
 	/* 使用EQS在关卡开始时生成的所有拾取物类 */
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
 	TArray<TSubclassOf<AActor>> PowerupClasses;
@@ -73,6 +85,11 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
 	int32 DesiredPowerupCount;
 
-	UPROPERTY(EditDefaultsOnly,Category = "Bonus")
+	UPROPERTY(EditDefaultsOnly, Category = "Bonus")
 	float KillBonus;
+	
+	FString SlotName;
+	
+	UPROPERTY()
+	USSaveGame* CurrentSaveGame;
 };
