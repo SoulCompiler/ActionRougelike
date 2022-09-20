@@ -24,21 +24,26 @@ bool ASPlayerState::ApplyCreditsChange(AActor* InstigatorActor, float Delta)
 		return false;
 	}
 
-	if (GetOwner()->HasAuthority())
-	{
-		Credits = NewCredits;
+	// if (GetOwner()->HasAuthority())
+	// {
+	Credits = NewCredits;
 
-		MulticastCreditsChanged(NewCredits, Delta);
-	}
+	// 	MulticastCreditsChanged(NewCredits, Delta);
+	// }
 
 	return true;
+}
+
+void ASPlayerState::OnRep_Credits(float OldCredits)
+{
+	OnCreditsChanged.Broadcast(this, Credits, Credits - OldCredits);
 }
 
 void ASPlayerState::SavePlayerState_Implementation(USSaveGame* SaveObject)
 {
 	if (SaveObject)
 	{
-		SaveObject->Creadits = Credits;
+		SaveObject->Credits = Credits;
 	}
 }
 
@@ -46,14 +51,17 @@ void ASPlayerState::LoadPlayerState_Implementation(USSaveGame* SaveObject)
 {
 	if (SaveObject)
 	{
-		Credits = SaveObject->Creadits;
+		// Credits = SaveObject->Creadits;
+		
+		// Makes sure we trigger credits changed event
+		ApplyCreditsChange(nullptr, SaveObject->Credits);
 	}
 }
 
-void ASPlayerState::MulticastCreditsChanged_Implementation(float NewCredits, float Delta)
-{
-	OnCreditsChanged.Broadcast(this, NewCredits, Delta);
-}
+// void ASPlayerState::MulticastCreditsChanged_Implementation(float NewCredits, float Delta)
+// {
+// 	OnCreditsChanged.Broadcast(this, NewCredits, Delta);
+// }
 
 void ASPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

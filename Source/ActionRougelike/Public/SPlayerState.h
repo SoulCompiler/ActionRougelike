@@ -33,11 +33,16 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	void LoadPlayerState(USSaveGame* SaveObject);
 protected:
-	UFUNCTION(NetMulticast, Reliable) // @FIXME: mark as unreliable once we move the 'state' our of scharacter
-	void MulticastCreditsChanged(float NewCredits, float Delta);
+	// 在这里使用multicast的坏处是我们会通过网络发送过多的数据, 因为RPC至少要发送两个参数. OnRep_ 回调函数则没有额外开销因为反正我们要复制得分
+	// UFUNCTION(NetMulticast, Reliable) // @FIXME: mark as unreliable once we move the 'state' our of scharacter
+	// void MulticastCreditsChanged(float NewCredits, float Delta);
+
+	// OnRep_ 可以添加一个参数用来引用他所绑定的变量的旧值，在这里对于我们计算出分数差值很有用
+	UFUNCTION()
+	void OnRep_Credits(float OldCredits /* 自动绑定旧的Credits，类型必须相同 */);
 
 protected:
-	UPROPERTY(Replicated, VisibleAnywhere, Category = "Credits")
+	UPROPERTY(ReplicatedUsing="OnRep_Credits", VisibleAnywhere, Category = "Credits")
 	float Credits;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")

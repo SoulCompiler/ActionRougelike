@@ -34,7 +34,7 @@ class ACTIONROUGELIKE_API USSaveGame : public USaveGame
 
 public:
 	UPROPERTY()
-	int32 Creadits;
+	int32 Credits;
 
 	UPROPERTY()
 	TArray<FActorSaveData> SavedActors;

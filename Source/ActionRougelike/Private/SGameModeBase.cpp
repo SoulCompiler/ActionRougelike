@@ -191,7 +191,7 @@ void ASGameModeBase::LoadSaveGame()
 			if (ActorData.ActorName == Actor->GetName())
 			{
 				Actor->SetActorTransform(ActorData.Transform);
-				
+
 				FMemoryReader MemReader(ActorData.ByteData);
 				FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
 				Ar.ArIsSaveGame = true;
@@ -200,7 +200,7 @@ void ASGameModeBase::LoadSaveGame()
 
 				// 保证加载的变量调用合适的函数以恢复原本的状态
 				ISGameplayInterface::Execute_OnActorLoaded(Actor);
-				
+
 				break;
 			}
 		}
@@ -216,13 +216,14 @@ void ASGameModeBase::InitGame(const FString& MapName, const FString& Options, FS
 
 void ASGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
 {
-	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
-
+	// Calling Before Super:: so we set variables before 'beginplayingstate' is called in PlayerController (Which is where we instantiate IO)
 	ASPlayerState* PS = NewPlayer->GetPlayerState<ASPlayerState>();
 	if (PS)
 	{
 		PS->LoadPlayerState(CurrentSaveGame);
 	}
+	
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
 }
 
 void ASGameModeBase::SpawnBotTimerElapsed()

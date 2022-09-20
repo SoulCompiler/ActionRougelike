@@ -99,7 +99,7 @@ void ASAICharacter::SetTargetActor(AActor* NewTarget)
 	if (GetTargetActor() != NewTarget)
 	{
 		MulticastPawnSeen();
-		
+
 		AAIController* AIC = Cast<AAIController>(GetController());
 		if (ensure(AIC))
 		{
@@ -123,13 +123,10 @@ AActor* ASAICharacter::GetTargetActor() const
 
 void ASAICharacter::MulticastPawnSeen_Implementation()
 {
-	if (PlayerSpottedFlag == nullptr)
+	USWorldUserWidget* NewWidget = CreateWidget<USWorldUserWidget>(GetWorld(), PlayerSpottedWidgetClass);
+	if (NewWidget)
 	{
-		PlayerSpottedFlag = CreateWidget<USWorldUserWidget>(GetWorld(), PlayerSpottedWidgetClass);
-		if (PlayerSpottedFlag)
-		{
-			PlayerSpottedFlag->AttachedActor = this;
-			PlayerSpottedFlag->AddToViewport(10); // 加入视口时调用Event Construct，所以要在这之前初始化Event Construct需要的值（见蓝图）。
-		}
+		NewWidget->AttachedActor = this;
+		NewWidget->AddToViewport(10); // 加入视口时调用Event Construct，所以要在这之前初始化Event Construct需要的值（见蓝图）。
 	}
 }

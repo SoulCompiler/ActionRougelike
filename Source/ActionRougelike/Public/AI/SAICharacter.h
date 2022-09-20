@@ -58,7 +58,4 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
 	TSubclassOf<UUserWidget> PlayerSpottedWidgetClass;
-	
-	UPROPERTY()
-	USWorldUserWidget* PlayerSpottedFlag;
 };
