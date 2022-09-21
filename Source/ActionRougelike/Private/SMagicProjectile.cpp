@@ -37,6 +37,8 @@ ASMagicProjectile::ASMagicProjectile()
 	SphereComp->OnComponentBeginOverlap.RemoveAll(this);
 	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &ASMagicProjectile::OnActorOverlap);
 
+	InitialLifeSpan = 10.0f;
+
 	DamageAmount = 20.0f;
 }
 
@@ -46,7 +48,6 @@ void ASMagicProjectile::BeginPlay()
 
 
 	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
-	
 }
 
 void ASMagicProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,

@@ -7,6 +7,7 @@
 #include "Engine/ActorChannel.h"
 #include "Net/UnrealNetwork.h"
 
+DECLARE_CYCLE_STAT(TEXT("StartActionByName"), STAT_StartActionByName, STATGROUP_STANFORD);
 
 USActionComponent::USActionComponent()
 {
@@ -27,6 +28,21 @@ void USActionComponent::BeginPlay()
 			AddAction(GetOwner(), ActionClass);
 		}
 	}
+}
+
+void USActionComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	// 必须拷贝一份数组迭代，因为在迭代过程中原数组可能会改变Iterator，比如其他地方的add和remove
+	TArray<USAction*> ActionsCopy = Actions;
+	for (USAction* Action : ActionsCopy)
+	{
+		if (Action && Action->IsRunning())
+		{
+			Action->StopAction(GetOwner());
+		}
+	}
+
+	Super::EndPlay(EndPlayReason);
 }
 
 
@@ -100,6 +116,8 @@ void USActionComponent::RemoveAction(USAction* ActionToRemove)
 
 bool USActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 {
+	SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
+
 	for (USAction* Action : Actions)
 	{
 		if (Action && Action->ActionName == ActionName)
@@ -114,9 +132,12 @@ bool USActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 			// Is Client?
 			if (!GetOwner()->HasAuthority())
 			{
-				// @Todo：只将RPC发给了服务端。没有将运行结果同步到客户端
+				// @Todo：只将RPC发给了服务端。没有将运行结果同步到客户端(已解决)
 				ServerStartAction(Instigator, ActionName);
 			}
+
+			// Bookmark for Unreal Insights
+			TRACE_BOOKMARK(TEXT("StartAction::%s"), *GetNameSafe(Action));
 
 			Action->StartAction(Instigator);
 			return true;
