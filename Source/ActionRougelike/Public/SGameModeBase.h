@@ -3,11 +3,53 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SMonsterData.h"
 #include "SSaveGame.h"
-#include "EnvironmentQuery/EnvQuery.h"
+#include "Engine/DataTable.h"
 #include "EnvironmentQuery/EnvQueryInstanceBlueprintWrapper.h"
 #include "GameFramework/GameModeBase.h"
 #include "SGameModeBase.generated.h"
+
+// DataTable Row for spawning monsters in game mode
+USTRUCT(BlueprintType)
+struct FMonsterInfoRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+	FMonsterInfoRow()
+	{
+		Weight = 1.0f;
+		SpawnCost = 5.0f;
+		KillReward = 20.0f;
+	}
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	// TSubclassOf<AActor> MonsterClass;
+	/*	↓
+		↓
+		↓	*/
+	// USMonsterData* MonsterData;
+	/*	↓
+		↓
+		↓	*/
+	// 用于资产管理器查询
+	FPrimaryAssetId MonsterId;
+
+	// Relative chance to pick this monster
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Weight;
+
+	// Points required by gamemode to spawn this unit
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float SpawnCost;
+
+	// Amount of credits awarded to killer of this unit.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float KillReward;
+};
+
 
 /**
  * 
@@ -39,10 +81,12 @@ public:
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 
 	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
-	
+
 protected:
 	UFUNCTION()
 	void SpawnBotTimerElapsed();
+
+	void OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation);
 
 	UFUNCTION()
 	void OnBotSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
@@ -64,14 +108,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	UEnvQuery* PowerupSpawnQuery;
 
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	TSubclassOf<AActor> MinionClass;
+	// UPROPERTY(EditDefaultsOnly, Category = "AI")
+	// TSubclassOf<AActor> MinionClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	UCurveFloat* DifficultyCurve;
 
 	UPROPERTY(EditAnywhere, Category = "AI")
 	float MaxBotCount;
+
+	// All available monsters.
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	UDataTable* MonsterTable;
 
 	/* 使用EQS在关卡开始时生成的所有拾取物类 */
 	UPROPERTY(EditDefaultsOnly, Category = "Powerups")
@@ -87,9 +135,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Bonus")
 	float KillBonus;
-	
+
 	FString SlotName;
-	
+
 	UPROPERTY()
 	USSaveGame* CurrentSaveGame;
 };

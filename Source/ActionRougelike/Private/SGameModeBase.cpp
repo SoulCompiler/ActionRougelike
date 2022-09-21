@@ -10,7 +10,9 @@
 #include "SCharacter.h"
 #include "SGameplayInterface.h"
 #include "SPlayerState.h"
+#include "ActionRougelike/ActionRougelike.h"
 #include "AI/SAICharacter.h"
+#include "Engine/AssetManager.h"
 #include "EnvironmentQuery/EnvQueryManager.h"
 #include "GameFramework/GameStateBase.h"
 #include "Kismet/GameplayStatics.h"
@@ -222,7 +224,7 @@ void ASGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* N
 	{
 		PS->LoadPlayerState(CurrentSaveGame);
 	}
-	
+
 	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
 }
 
@@ -239,6 +241,38 @@ void ASGameModeBase::SpawnBotTimerElapsed()
 	if (ensure(QueryInstance))
 	{
 		QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &ASGameModeBase::OnBotSpawnQueryCompleted);
+	}
+}
+
+void ASGameModeBase::OnMonsterLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation)
+{
+	LogOnScreen(this, "Finished loading", FColor::Green);
+
+	UAssetManager* Manager = UAssetManager::GetIfValid();
+	if (ensure(Manager))
+	{
+		USMonsterData* MonsterData = Cast<USMonsterData>(Manager->GetPrimaryAssetObject(LoadedId));
+		if (ensure(MonsterData))
+		{
+			// 为AI赋技能和属性
+			AActor* NewBot = GetWorld()->SpawnActor<AActor>(MonsterData->MonsterClass, SpawnLocation, FRotator::ZeroRotator);
+
+			// @Fixme: 为什么这里总抛异常？每次进编辑器要点保存数据表和数据资产才能正常运行。
+			if (ensure(NewBot))
+			{
+				LogOnScreen(this, FString::Printf(TEXT("Spawned enemy: %s (%s)"), *GetNameSafe(NewBot), *GetNameSafe(MonsterData)));
+
+				// Grant special actions, buffs etc.
+				USActionComponent* ActionComp = Cast<USActionComponent>(NewBot->GetComponentByClass(USActionComponent::StaticClass()));
+				if (ActionComp)
+				{
+					for (TSubclassOf<USAction> ActionClass : MonsterData->Actions)
+					{
+						ActionComp->AddAction(NewBot, ActionClass);
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -284,7 +318,43 @@ void ASGameModeBase::OnBotSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrapper*
 
 	if (Locations.IsValidIndex(0))
 	{
-		GetWorld()->SpawnActor<AActor>(MinionClass, Locations[0], FRotator::ZeroRotator);
+		if (MonsterTable)
+		{
+			TArray<FMonsterInfoRow*> Rows;
+			MonsterTable->GetAllRows("", Rows);
+
+			// Get Random Enemy
+			int32 RandomIndex = FMath::RandRange(0, Rows.Num() - 1);
+			FMonsterInfoRow* SelectedRow = Rows[RandomIndex];
+
+			UAssetManager* Manager = UAssetManager::GetIfValid();
+			if (Manager)
+			{
+				LogOnScreen(this, "Loading monster...", FColor::Green);
+
+				TArray<FName> Bundles;
+				FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &ASGameModeBase::OnMonsterLoaded, SelectedRow->MonsterId, Locations[0]);
+				Manager->LoadPrimaryAsset(SelectedRow->MonsterId, Bundles, Delegate);
+			}
+
+			// 抑移至OnMonsterLoaded()
+			// // 为AI赋技能和属性
+			// AActor* NewBot = GetWorld()->SpawnActor<AActor>(SelectedRow->MonsterData->MonsterClass, Locations[0], FRotator::ZeroRotator);
+			// if (NewBot)
+			// {
+			// 	LogOnScreen(this, FString::Printf(TEXT("Spawned enemy: %s (%s)"), *GetNameSafe(NewBot), *GetNameSafe(SelectedRow->MonsterData)));
+			//
+			// 	// Grant special actions, buffs etc.
+			// 	USActionComponent* ActionComp = Cast<USActionComponent>(NewBot->GetComponentByClass(USActionComponent::StaticClass()));
+			// 	if (ActionComp)
+			// 	{
+			// 		for (TSubclassOf<USAction> ActionClass : SelectedRow->MonsterData->Actions)
+			// 		{
+			// 			ActionComp->AddAction(NewBot, ActionClass);
+			// 		}
+			// 	}
+			// }
+		}
 
 		DrawDebugSphere(GetWorld(), Locations[0], 50.0f, 20, FColor::Blue, false, 60.0f);
 	}

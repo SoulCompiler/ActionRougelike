@@ -91,7 +91,7 @@ protected:
 	USActionComponent* ActionComp;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
-	UTexture2D* Icon;
+	TSoftObjectPtr<UTexture2D> Icon;
 
 	// 只有服务器知道这个技能什么时候开始，必须同步给新连接客户端以正确同步Buff UI
 	UPROPERTY(Replicated)
