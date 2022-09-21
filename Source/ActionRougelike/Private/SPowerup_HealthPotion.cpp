@@ -7,12 +7,10 @@
 #include "SPlayerState.h"
 #include "GameFramework/Character.h"
 
-// Sets default values
+#define LOCTEXT_NAMESPACE "InteractableActors"
+
 ASPowerup_HealthPotion::ASPowerup_HealthPotion()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	// PrimaryActorTick.bCanEverTick = true;
-
 	HealingAmount = 20.0f;
 	CoolDownTime = 10.0f;
 	CreditsCost = 20.0f;
@@ -41,3 +39,16 @@ void ASPowerup_HealthPotion::Interact_Implementation(APawn* InstigatorPawn)
 		}
 	}
 }
+
+FText ASPowerup_HealthPotion::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	USAttributeComponent* AttributeComp = USAttributeComponent::GetAttributes(InstigatorPawn);
+	if (AttributeComp && AttributeComp->IsFullHealth())
+	{
+		return LOCTEXT("HealthPotion_FullHealthWarning", "Already at full health");
+	}
+
+	return FText::Format(LOCTEXT("HealthPotion_InteractMessage", "Cost {0} Credits. Restores health to maximum."), CreditsCost);
+}
+
+#undef LOCTEXT_NAMESPACE
