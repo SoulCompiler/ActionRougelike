@@ -15,8 +15,9 @@ public:
 	// Sets default values for this actor's properties
 	ASPowerup_HealthPotion();
 
-protected:
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
+
+	virtual FText GetInteractText_Implementation(APawn* InstigatorPawn) override;
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Healing")

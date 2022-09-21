@@ -26,6 +26,11 @@ ASPowerupActorBase::ASPowerupActorBase()
 	SetReplicates(true);
 }
 
+FText ASPowerupActorBase::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	return  FText::GetEmpty();
+}
+
 void ASPowerupActorBase::Interact_Implementation(APawn* InstigatorPawn)
 {
 }

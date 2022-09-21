@@ -16,6 +16,8 @@ class ACTIONROUGELIKE_API ASPowerupActorBase : public AActor, public ISGameplayI
 public:
 	ASPowerupActorBase();
 
+	virtual FText GetInteractText_Implementation(APawn* InstigatorPawn) override;
+
 protected:
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 
