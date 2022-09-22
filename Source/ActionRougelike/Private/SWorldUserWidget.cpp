@@ -20,12 +20,13 @@ void USWorldUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 	}
 
 	FVector2D ScreenPosition;
+	bool bIsOnScreen = UGameplayStatics::ProjectWorldToScreen(GetOwningPlayer(), AttachedActor->GetActorLocation() + WorldOffset, ScreenPosition);
 
 	// GetOwningPlayer在只有一个Controller的时候等于GetPlayerController 0
 	// UKismetSystemLibrary::PrintString(GetWorld(), UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetName());
 	// UKismetSystemLibrary::PrintString(GetWorld(),GetOwningPlayer()->GetName(),true,true,FLinearColor::Yellow);
-	
-	if (UGameplayStatics::ProjectWorldToScreen(GetOwningPlayer(), AttachedActor->GetActorLocation() + WorldOffset, ScreenPosition))
+
+	if (bIsOnScreen)
 	{
 		float Scale = UWidgetLayoutLibrary::GetViewportScale(this);
 
@@ -35,5 +36,10 @@ void USWorldUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTim
 		{
 			ParentSizeBox->SetRenderTranslation(ScreenPosition);
 		}
+	}
+
+	if (ParentSizeBox)
+	{
+		ParentSizeBox->SetVisibility(bIsOnScreen ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
 	}
 }

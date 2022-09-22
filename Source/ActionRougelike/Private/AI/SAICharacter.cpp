@@ -25,7 +25,8 @@ ASAICharacter::ASAICharacter()
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 
 	// 要使骨骼受某个方向子弹的力，就必须是Mesh能overlap这个子弹，要么让Collision Comp ignore这个子弹的碰撞通道，要么为子弹重新配置一种新的碰撞通道。
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+	// GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Ignore);
+	// Enabled on mesh to react to Object Type: Projectile
 	GetMesh()->SetGenerateOverlapEvents(true);
 
 	TimeToHitParamName = "TimeToHit";
